@@ -557,14 +557,29 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   }
 
   void _pickBlockImage(int index, ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: source,
-      imageQuality: 35, 
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _actionBlocks[index].imageFiles.add(File(pickedFile.path)); 
-      });
+    if (source == ImageSource.gallery) {
+      // 1. Jika pilih dari Galeri -> Bisa pilih BANYAK FOTO sekaligus
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(
+        imageQuality: 35, 
+      );
+      if (pickedFiles.isNotEmpty) {
+        setState(() {
+          _actionBlocks[index].imageFiles.addAll(
+            pickedFiles.map((file) => File(file.path))
+          ); 
+        });
+      }
+    } else {
+      // 2. Jika pakai Kamera -> Tetap 1 per 1 (karena jepret langsung)
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 35, 
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _actionBlocks[index].imageFiles.add(File(pickedFile.path)); 
+        });
+      }
     }
   }
 
@@ -634,9 +649,36 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_activeDraftId == null ? 'Service Report Input Portal' : 'Editing Draft Active (#${_activeDraftId})', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+        toolbarHeight: 90, // TAMBAHAN: Memperlebar area biru agar logo dan teks muat sempurna
         backgroundColor: const Color(0xFF0068C9), 
         elevation: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 1. BLOK LOGO (Di Atas)
+            Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white, // Background putih agar logo Finpac kontras & jelas
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Image.asset(
+                'assets/logo_finpac.png', // Memanggil gambar asli dari folder assets
+                height: 25,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => 
+                    const Text('⚠️ Logo tidak ditemukan', style: TextStyle(color: Colors.red, fontSize: 10)),
+              ),
+            ),
+            // 2. BLOK TEKS JUDUL (Di Bawah Logo)
+            Text(
+              _activeDraftId == null ? 'Service Report Input Portal' : 'Editing Draft Active (#${_activeDraftId})', 
+              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)
+            ),
+          ],
+        ),
         actions: [
           if (_activeDraftId != null)
             IconButton(
