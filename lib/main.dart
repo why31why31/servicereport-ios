@@ -649,24 +649,25 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 90, // TAMBAHAN: Memperlebar area biru agar logo dan teks muat sempurna
+        // toolbarHeight dihapus agar kembali ke ukuran standar
         backgroundColor: const Color(0xFF0068C9), 
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 1. BLOK LOGO (Di Atas)
+            // 1. BLOK LOGO (Di Atas, Dibuat Lebih Lebar)
             Container(
-              margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              margin: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white, // Background putih agar logo Finpac kontras & jelas
+                color: Colors.white, 
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Image.asset(
-                'assets/logo_finpac.png', // Memanggil gambar asli dari folder assets
-                height: 25,
+                'assets/logo_aplikasi.png', // <--- GANTI NAMA FILE JIKA PERLU
+                width: 130,  // <--- TAMBAHAN: Lebar logo ditarik menjadi 130
+                height: 22,  // <--- Tinggi ditahan agar AppBar tidak kepenuhan
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => 
                     const Text('⚠️ Logo tidak ditemukan', style: TextStyle(color: Colors.red, fontSize: 10)),
