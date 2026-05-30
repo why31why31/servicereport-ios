@@ -273,8 +273,9 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
 
     pw.MemoryImage? pdfLogo;
     try {
-      // PERBAIKAN UTAMA: Langsung decode dari data Base64 internal (Anti-Hilang di iOS)
-      final imageBytes = base64Decode(finpacLogoBase64);
+      // Memanggil file gambar kop surat khusus untuk PDF
+      final bytecode = await rootBundle.load('assets/logo_finpac.png');
+      final imageBytes = bytecode.buffer.asUint8List();
       pdfLogo = pw.MemoryImage(imageBytes);
     } catch (e) {
       pdfLogo = null;

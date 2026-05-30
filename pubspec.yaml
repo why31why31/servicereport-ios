@@ -29,6 +29,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon.png
+    - assets/logo_finpac.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
