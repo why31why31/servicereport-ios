@@ -445,7 +445,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         builder: (context) => Scaffold(
           appBar: AppBar(
             backgroundColor: const Color(0xFF0068C9),
-            title: const Text("WYSIWYG Live PDF Composition", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            title: const Text("Live PDF Composition", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
           body: PdfPreview(
             build: (format) async {
@@ -617,7 +617,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       final file = File("${output.path}/Report_${customerName}_${_dateController.text}.pdf");
       await file.writeAsBytes(await pdfDoc.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: 'Finpac Service Report - $customerName');
+      await Share.shareXFiles([XFile(file.path)]);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Failed to execute PDF output: $e')));
     }
@@ -660,13 +660,11 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
               _buildStreamlitLabel("Customer"),
               TextFormField(controller: _cuController),
 
-              _buildStreamlitLabel("Machine"),
-              DropdownButtonFormField(
-                value: _selectedMachine,
-                items: _machines.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                onChanged: (v) => setState(() => _selectedMachine = v.toString()),
-              ),
+              // Dipindah ke urutan ke-3
+              _buildStreamlitLabel("Meet with"),
+              TextFormField(controller: _mwController),
 
+              // Dipindah ke urutan ke-4
               _buildStreamlitLabel("Date"),
               TextFormField(
                 controller: _dateController,
@@ -677,8 +675,13 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                 ),
               ),
 
-              _buildStreamlitLabel("Meet with"),
-              TextFormField(controller: _mwController),
+              // Dipindah ke urutan ke-5
+              _buildStreamlitLabel("Machine"),
+              DropdownButtonFormField(
+                value: _selectedMachine,
+                items: _machines.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+                onChanged: (v) => setState(() => _selectedMachine = v.toString()),
+              ),
               
               _buildStreamlitLabel("Machine Type"),
               TextFormField(controller: _tyController),
@@ -687,6 +690,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
               TextFormField(controller: _snController),
               
               const SizedBox(height: 15),
+
+              // ... (Sisa kode Card Problem Description dan seterusnya biarkan sama) ...
 
               Card(
                 color: Colors.white,
