@@ -649,25 +649,25 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // toolbarHeight dihapus agar kembali ke ukuran standar
+        toolbarHeight: 75, // Disetel ke 75 agar logo besar tidak terpotong
         backgroundColor: const Color(0xFF0068C9), 
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 1. BLOK LOGO (Di Atas, Dibuat Lebih Lebar)
+            // 1. BLOK LOGO (Dimaksimalkan Lebar & Tingginya)
             Container(
-              margin: const EdgeInsets.only(bottom: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              margin: const EdgeInsets.only(bottom: 2), // Margin diperkecil agar lebih lega
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.white, 
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Image.asset(
-                'assets/logo_aplikasi.png', // <--- GANTI NAMA FILE JIKA PERLU
-                width: 130,  // <--- TAMBAHAN: Lebar logo ditarik menjadi 130
-                height: 22,  // <--- Tinggi ditahan agar AppBar tidak kepenuhan
+                'assets/logo_aplikasi.png', // <--- Pastikan nama file sudah benar
+                width: 200,  // <--- Lebar ditarik maksimal
+                height: 45,  // <--- Tinggi dimaksimalkan
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => 
                     const Text('⚠️ Logo tidak ditemukan', style: TextStyle(color: Colors.red, fontSize: 10)),
