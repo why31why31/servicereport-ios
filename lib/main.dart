@@ -649,31 +649,32 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 75, // Disetel ke 75 agar logo besar tidak terpotong
+        toolbarHeight: 80, // Ukuran pas agar logo dan teks tidak terpotong
         backgroundColor: const Color(0xFF0068C9), 
         elevation: 0,
+        centerTitle: true, // TAMBAHAN: Pastikan semua elemen benar-benar di tengah layar
         title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center, // Agar kotak putih & teks sejajar di tengah
           children: [
-            // 1. BLOK LOGO (Dimaksimalkan Lebar & Tingginya)
+            // 1. BLOK LOGO (Kotak Putih Proporsional)
             Container(
-              margin: const EdgeInsets.only(bottom: 2), // Margin diperkecil agar lebih lega
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Jarak putih yang pas mengelilingi logo
               decoration: BoxDecoration(
                 color: Colors.white, 
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(6),
               ),
               child: Image.asset(
-                'assets/logo_aplikasi.png', // <--- Pastikan nama file sudah benar
-                width: 200,  // <--- Lebar ditarik maksimal
-                height: 45,  // <--- Tinggi dimaksimalkan
+                'assets/logo_aplikasi.png', // Ganti dengan nama file logo baru Bapak
+                // Baris 'width' DIHAPUS agar kotak putih menyesuaikan panjang logo secara otomatis
+                height: 40,  // Atur tinggi logo di sini (bisa dinaikkan jadi 45 jika masih kurang)
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) => 
-                    const Text('⚠️ Logo tidak ditemukan', style: TextStyle(color: Colors.red, fontSize: 10)),
+                    const Text('⚠️ Logo error', style: TextStyle(color: Colors.red, fontSize: 10)),
               ),
             ),
-            // 2. BLOK TEKS JUDUL (Di Bawah Logo)
+            // 2. BLOK TEKS JUDUL
             Text(
               _activeDraftId == null ? 'Service Report Input Portal' : 'Editing Draft Active (#${_activeDraftId})', 
               style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)
