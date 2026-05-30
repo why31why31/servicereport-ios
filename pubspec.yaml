@@ -32,5 +32,6 @@ flutter:
 
 flutter_launcher_icons:
   android: "launcher_icon"
+  ios: true                   # <--- TAMBAHKAN BARIS INI UNTUK IPHONE
   image_path: "assets/icon.png"
   min_sdk_android: 21
