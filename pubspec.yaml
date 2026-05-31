@@ -12,9 +12,9 @@ dependencies:
   isar: ^3.1.0
   isar_flutter_libs: ^3.1.0
   path_provider: ^2.1.2
-  signature: ^5.4.0
-  share_plus: ^7.2.1
-  image_picker: ^1.0.7
+  signature: ^6.3.0         # <--- Diupdate
+  share_plus: ^13.1.0       # <--- Diupdate ke versi terbaru
+  image_picker: ^1.1.2      # <--- Diupdate ke versi terbaru
   pdf: ^3.10.7
   printing: ^5.11.1
   http: ^1.2.1
