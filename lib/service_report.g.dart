@@ -67,18 +67,23 @@ const LocalReportSchema = CollectionSchema(
       name: r'problemDescription',
       type: IsarType.string,
     ),
-    r'serialNo': PropertySchema(
+    r'savedActionBlocks': PropertySchema(
       id: 10,
+      name: r'savedActionBlocks',
+      type: IsarType.stringList,
+    ),
+    r'serialNo': PropertySchema(
+      id: 11,
       name: r'serialNo',
       type: IsarType.string,
     ),
     r'status': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'status',
       type: IsarType.string,
     ),
     r'technicianSignatureBase64': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'technicianSignatureBase64',
       type: IsarType.string,
     )
@@ -88,21 +93,7 @@ const LocalReportSchema = CollectionSchema(
   deserialize: _localReportDeserialize,
   deserializeProp: _localReportDeserializeProp,
   idName: r'id',
-  indexes: {
-    r'isSynced': IndexSchema(
-      id: -39763503327887510,
-      name: r'isSynced',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'isSynced',
-          type: IndexType.value,
-          caseSensitive: false,
-        )
-      ],
-    )
-  },
+  indexes: {},
   links: {},
   embeddedSchemas: {},
   getId: _localReportGetId,
@@ -117,22 +108,84 @@ int _localReportEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.actionTaken.length * 3;
-  bytesCount += 3 + object.completeBy.length * 3;
-  bytesCount += 3 + object.customerName.length * 3;
+  {
+    final value = object.actionTaken;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.completeBy;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.customerName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   {
     final value = object.customerSignatureBase64;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.date.length * 3;
-  bytesCount += 3 + object.machine.length * 3;
-  bytesCount += 3 + object.machineType.length * 3;
-  bytesCount += 3 + object.meetWith.length * 3;
-  bytesCount += 3 + object.problemDescription.length * 3;
-  bytesCount += 3 + object.serialNo.length * 3;
-  bytesCount += 3 + object.status.length * 3;
+  {
+    final value = object.date;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.machine;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.machineType;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.meetWith;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.problemDescription;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final list = object.savedActionBlocks;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final value = object.serialNo;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.status;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   {
     final value = object.technicianSignatureBase64;
     if (value != null) {
@@ -158,9 +211,10 @@ void _localReportSerialize(
   writer.writeString(offsets[7], object.machineType);
   writer.writeString(offsets[8], object.meetWith);
   writer.writeString(offsets[9], object.problemDescription);
-  writer.writeString(offsets[10], object.serialNo);
-  writer.writeString(offsets[11], object.status);
-  writer.writeString(offsets[12], object.technicianSignatureBase64);
+  writer.writeStringList(offsets[10], object.savedActionBlocks);
+  writer.writeString(offsets[11], object.serialNo);
+  writer.writeString(offsets[12], object.status);
+  writer.writeString(offsets[13], object.technicianSignatureBase64);
 }
 
 LocalReport _localReportDeserialize(
@@ -170,20 +224,21 @@ LocalReport _localReportDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = LocalReport();
-  object.actionTaken = reader.readString(offsets[0]);
-  object.completeBy = reader.readString(offsets[1]);
-  object.customerName = reader.readString(offsets[2]);
+  object.actionTaken = reader.readStringOrNull(offsets[0]);
+  object.completeBy = reader.readStringOrNull(offsets[1]);
+  object.customerName = reader.readStringOrNull(offsets[2]);
   object.customerSignatureBase64 = reader.readStringOrNull(offsets[3]);
-  object.date = reader.readString(offsets[4]);
+  object.date = reader.readStringOrNull(offsets[4]);
   object.id = id;
   object.isSynced = reader.readBool(offsets[5]);
-  object.machine = reader.readString(offsets[6]);
-  object.machineType = reader.readString(offsets[7]);
-  object.meetWith = reader.readString(offsets[8]);
-  object.problemDescription = reader.readString(offsets[9]);
-  object.serialNo = reader.readString(offsets[10]);
-  object.status = reader.readString(offsets[11]);
-  object.technicianSignatureBase64 = reader.readStringOrNull(offsets[12]);
+  object.machine = reader.readStringOrNull(offsets[6]);
+  object.machineType = reader.readStringOrNull(offsets[7]);
+  object.meetWith = reader.readStringOrNull(offsets[8]);
+  object.problemDescription = reader.readStringOrNull(offsets[9]);
+  object.savedActionBlocks = reader.readStringList(offsets[10]);
+  object.serialNo = reader.readStringOrNull(offsets[11]);
+  object.status = reader.readStringOrNull(offsets[12]);
+  object.technicianSignatureBase64 = reader.readStringOrNull(offsets[13]);
   return object;
 }
 
@@ -195,30 +250,32 @@ P _localReportDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readBool(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 10:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 11:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -243,14 +300,6 @@ extension LocalReportQueryWhereSort
   QueryBuilder<LocalReport, LocalReport, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-
-  QueryBuilder<LocalReport, LocalReport, QAfterWhere> anyIsSynced() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'isSynced'),
-      );
     });
   }
 }
@@ -322,58 +371,31 @@ extension LocalReportQueryWhere
       ));
     });
   }
-
-  QueryBuilder<LocalReport, LocalReport, QAfterWhereClause> isSyncedEqualTo(
-      bool isSynced) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'isSynced',
-        value: [isSynced],
-      ));
-    });
-  }
-
-  QueryBuilder<LocalReport, LocalReport, QAfterWhereClause> isSyncedNotEqualTo(
-      bool isSynced) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'isSynced',
-              lower: [],
-              upper: [isSynced],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'isSynced',
-              lower: [isSynced],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'isSynced',
-              lower: [isSynced],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'isSynced',
-              lower: [],
-              upper: [isSynced],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
 }
 
 extension LocalReportQueryFilter
     on QueryBuilder<LocalReport, LocalReport, QFilterCondition> {
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      actionTakenIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'actionTaken',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      actionTakenIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'actionTaken',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       actionTakenEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -387,7 +409,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       actionTakenGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -403,7 +425,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       actionTakenLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -419,8 +441,8 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       actionTakenBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -508,8 +530,26 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      completeByIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'completeBy',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      completeByIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'completeBy',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       completeByEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -523,7 +563,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       completeByGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -539,7 +579,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       completeByLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -555,8 +595,8 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       completeByBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -644,8 +684,26 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      customerNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'customerName',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      customerNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'customerName',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       customerNameEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -659,7 +717,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       customerNameGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -675,7 +733,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       customerNameLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -691,8 +749,8 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       customerNameBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -935,8 +993,25 @@ extension LocalReportQueryFilter
     });
   }
 
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> dateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'date',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      dateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'date',
+      ));
+    });
+  }
+
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> dateEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -949,7 +1024,7 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> dateGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -964,7 +1039,7 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> dateLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -979,8 +1054,8 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> dateBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1129,8 +1204,26 @@ extension LocalReportQueryFilter
     });
   }
 
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      machineIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'machine',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      machineIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'machine',
+      ));
+    });
+  }
+
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> machineEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1144,7 +1237,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       machineGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1159,7 +1252,7 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> machineLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1174,8 +1267,8 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> machineBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1264,8 +1357,26 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      machineTypeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'machineType',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      machineTypeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'machineType',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       machineTypeEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1279,7 +1390,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       machineTypeGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1295,7 +1406,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       machineTypeLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1311,8 +1422,8 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       machineTypeBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1399,8 +1510,26 @@ extension LocalReportQueryFilter
     });
   }
 
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      meetWithIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'meetWith',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      meetWithIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'meetWith',
+      ));
+    });
+  }
+
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> meetWithEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1414,7 +1543,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       meetWithGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1430,7 +1559,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       meetWithLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1445,8 +1574,8 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> meetWithBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1535,8 +1664,26 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      problemDescriptionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'problemDescription',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      problemDescriptionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'problemDescription',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       problemDescriptionEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1550,7 +1697,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       problemDescriptionGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1566,7 +1713,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       problemDescriptionLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1582,8 +1729,8 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       problemDescriptionBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1670,8 +1817,271 @@ extension LocalReportQueryFilter
     });
   }
 
-  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> serialNoEqualTo(
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'savedActionBlocks',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'savedActionBlocks',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementEqualTo(
     String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'savedActionBlocks',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'savedActionBlocks',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'savedActionBlocks',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'savedActionBlocks',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'savedActionBlocks',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'savedActionBlocks',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementContains(String value,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'savedActionBlocks',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'savedActionBlocks',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'savedActionBlocks',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'savedActionBlocks',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'savedActionBlocks',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'savedActionBlocks',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'savedActionBlocks',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'savedActionBlocks',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'savedActionBlocks',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      savedActionBlocksLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'savedActionBlocks',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      serialNoIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'serialNo',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      serialNoIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'serialNo',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> serialNoEqualTo(
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1685,7 +2095,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       serialNoGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1701,7 +2111,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       serialNoLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1716,8 +2126,8 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> serialNoBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1805,8 +2215,25 @@ extension LocalReportQueryFilter
     });
   }
 
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> statusIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'status',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
+      statusIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'status',
+      ));
+    });
+  }
+
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> statusEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1820,7 +2247,7 @@ extension LocalReportQueryFilter
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition>
       statusGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1835,7 +2262,7 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> statusLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1850,8 +2277,8 @@ extension LocalReportQueryFilter
   }
 
   QueryBuilder<LocalReport, LocalReport, QAfterFilterCondition> statusBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -2519,6 +2946,13 @@ extension LocalReportQueryWhereDistinct
     });
   }
 
+  QueryBuilder<LocalReport, LocalReport, QDistinct>
+      distinctBySavedActionBlocks() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'savedActionBlocks');
+    });
+  }
+
   QueryBuilder<LocalReport, LocalReport, QDistinct> distinctBySerialNo(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2550,19 +2984,19 @@ extension LocalReportQueryProperty
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> actionTakenProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> actionTakenProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'actionTaken');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> completeByProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> completeByProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'completeBy');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> customerNameProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> customerNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'customerName');
     });
@@ -2575,7 +3009,7 @@ extension LocalReportQueryProperty
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> dateProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
     });
@@ -2587,38 +3021,45 @@ extension LocalReportQueryProperty
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> machineProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> machineProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'machine');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> machineTypeProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> machineTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'machineType');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> meetWithProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> meetWithProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'meetWith');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations>
+  QueryBuilder<LocalReport, String?, QQueryOperations>
       problemDescriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'problemDescription');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> serialNoProperty() {
+  QueryBuilder<LocalReport, List<String>?, QQueryOperations>
+      savedActionBlocksProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'savedActionBlocks');
+    });
+  }
+
+  QueryBuilder<LocalReport, String?, QQueryOperations> serialNoProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'serialNo');
     });
   }
 
-  QueryBuilder<LocalReport, String, QQueryOperations> statusProperty() {
+  QueryBuilder<LocalReport, String?, QQueryOperations> statusProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'status');
     });
