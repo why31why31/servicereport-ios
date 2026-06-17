@@ -350,35 +350,40 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             child: pw.Text("SERVICE REPORT", style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.white, letterSpacing: 0.5)),
           ),
           pw.SizedBox(height: 12),
+          // --- TABEL 1 (Technician, Date, Customer, Meet with) ---
           pw.Table(
-            columnWidths: {0: const pw.FixedColumnWidth(65), 1: const pw.FlexColumnWidth(), 2: const pw.FixedColumnWidth(60), 3: const pw.FlexColumnWidth()},
-            border: pw.TableBorder.symmetric(inside: const pw.BorderSide(color: PdfColors.grey400, width: 0.5), outside: const pw.BorderSide(color: PdfColors.grey600, width: 0.8)),
+            columnWidths: {0: const pw.FixedColumnWidth(65), 1: const pw.FlexColumnWidth(), 2: const pw.FixedColumnWidth(65), 3: const pw.FlexColumnWidth()},
+            border: null, // Menghilangkan bingkai grid tabel
             children: [
               pw.TableRow(children: [
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_cbController.text, style: pw.TextStyle(fontSize: 9))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 5, bottom: 5, right: 5), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5), child: pw.Text(_cbController.text, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 15, right: 5), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9))),
               ]),
               pw.TableRow(children: [
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_cuController.text, style: pw.TextStyle(fontSize: 9))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("Meet with:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_mwController.text, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 12, bottom: 5, right: 5), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 12, bottom: 5, left: 5, right: 5), child: pw.Text(_cuController.text, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 12, bottom: 5, left: 15, right: 5), child: pw.Text("Meet with:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 12, bottom: 5, left: 5, right: 5), child: pw.Text(_mwController.text, style: pw.TextStyle(fontSize: 9))),
               ]),
             ],
           ),
+          
+          pw.SizedBox(height: 12), // Jarak spasi antara baris tabel atas dan bawah
+          
+          // --- TABEL 2 (Machine, Type, S/N) ---
           pw.Table(
-            columnWidths: {0: const pw.FixedColumnWidth(65), 1: const pw.FlexColumnWidth(1.2), 2: const pw.FixedColumnWidth(45), 3: const pw.FlexColumnWidth(0.9), 4: const pw.FixedColumnWidth(40), 5: const pw.FlexColumnWidth(0.8)},
-            border: const pw.TableBorder(left: pw.BorderSide(color: PdfColors.grey600, width: 0.8), right: pw.BorderSide(color: PdfColors.grey600, width: 0.8), bottom: pw.BorderSide(color: PdfColors.grey600, width: 0.8), horizontalInside: pw.BorderSide(color: PdfColors.grey400, width: 0.5), verticalInside: pw.BorderSide(color: PdfColors.grey400, width: 0.5)),
+            columnWidths: {0: const pw.FixedColumnWidth(60), 1: const pw.FlexColumnWidth(1.2), 2: const pw.FixedColumnWidth(40), 3: const pw.FlexColumnWidth(0.9), 4: const pw.FixedColumnWidth(30), 5: const pw.FlexColumnWidth(0.8)},
+            border: null, // Menghilangkan bingkai grid tabel
             children: [
               pw.TableRow(children: [
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_selectedMachine, style: pw.TextStyle(fontSize: 9))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_tyController.text, style: pw.TextStyle(fontSize: 9))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8)), padding: const pw.EdgeInsets.all(5), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(_snController.text, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 5, bottom: 5, right: 5), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5), child: pw.Text(_selectedMachine, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 5), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5), child: pw.Text(_tyController.text, style: pw.TextStyle(fontSize: 9))),
+                pw.Container(padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 5), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))),
+                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5), child: pw.Text(_snController.text, style: pw.TextStyle(fontSize: 9))),
               ]),
             ],
           ),
