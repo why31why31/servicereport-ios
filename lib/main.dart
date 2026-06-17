@@ -433,7 +433,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             }),
           ),
 
-          pw.Spacer(), 
+          pw.SizedBox(height: 50), 
           
           pw.Container(
             padding: const pw.EdgeInsets.only(top: 10, left: 30, right: 30),
