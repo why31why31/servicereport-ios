@@ -353,62 +353,76 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
           // --- TABEL 1 (Technician, Date, Customer, Meet with) ---
           pw.Table(
             columnWidths: {
-              0: const pw.FixedColumnWidth(60), // Technician, Customer
+              0: const pw.FixedColumnWidth(65), // Technician, Customer
               1: const pw.FlexColumnWidth(1.2), // Input text
-              2: const pw.FixedColumnWidth(15), // Jarak Kosong (Spacer)
-              3: const pw.FixedColumnWidth(55), // Date, Meet with
+              2: const pw.FixedColumnWidth(10), // Jarak Kosong (Spacer)
+              3: const pw.FixedColumnWidth(60), // Date, Meet with
               4: const pw.FlexColumnWidth(1.0)  // Input text
             },
-            border: null,
-            defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom, // Kunci semua teks rata bawah dengan garis
+            border: null, 
+            defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom, 
             children: [
               pw.TableRow(children: [
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_cbController.text, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 15), // Kolom Jarak
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9.5))),
+                // Label Technician
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input Technician (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_cbController.text, style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10), // Kolom Jarak
+                // Label Date
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input Date (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9.5))),
               ]),
-              // Baris kosong untuk memberi spasi antar baris atas dan bawah
+              // Baris kosong untuk memberi spasi
               pw.TableRow(children: [
-                pw.SizedBox(height: 12), pw.SizedBox(height: 12), pw.SizedBox(height: 12), pw.SizedBox(height: 12), pw.SizedBox(height: 12),
+                pw.SizedBox(height: 10), pw.SizedBox(height: 10), pw.SizedBox(height: 10), pw.SizedBox(height: 10), pw.SizedBox(height: 10),
               ]),
               pw.TableRow(children: [
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_cuController.text, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 15), // Kolom Jarak
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("Meet with:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_mwController.text, style: pw.TextStyle(fontSize: 9.5))),
+                // Label Customer
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input Customer (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_cuController.text, style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10), // Kolom Jarak
+                // Label Meet with
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("Meet with:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input Meet with (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_mwController.text, style: pw.TextStyle(fontSize: 9.5))),
               ]),
             ],
           ),
           
-          pw.SizedBox(height: 12),
+          pw.SizedBox(height: 10),
           
           // --- TABEL 2 (Machine, Type, S/N) ---
           pw.Table(
             columnWidths: {
-              0: const pw.FixedColumnWidth(50), // Machine
+              0: const pw.FixedColumnWidth(55), // Machine
               1: const pw.FlexColumnWidth(1.2), // Input text
-              2: const pw.FixedColumnWidth(15), // Jarak Kosong (Spacer)
-              3: const pw.FixedColumnWidth(30), // Type
+              2: const pw.FixedColumnWidth(10), // Jarak Kosong (Spacer)
+              3: const pw.FixedColumnWidth(35), // Type
               4: const pw.FlexColumnWidth(0.9), // Input text
-              5: const pw.FixedColumnWidth(15), // Jarak Kosong (Spacer)
+              5: const pw.FixedColumnWidth(10), // Jarak Kosong (Spacer)
               6: const pw.FixedColumnWidth(25), // S/N
               7: const pw.FlexColumnWidth(0.8)  // Input text
             },
-            border: null,
-            defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom, // Kunci semua teks rata bawah dengan garis
+            border: null, 
+            defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom,
             children: [
               pw.TableRow(children: [
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_selectedMachine, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 15), // Kolom Jarak
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_tyController.text, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 15), // Kolom Jarak
-                pw.Padding(padding: const pw.EdgeInsets.only(bottom: 2), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.8))), padding: const pw.EdgeInsets.only(bottom: 2, left: 4), child: pw.Text(_snController.text, style: pw.TextStyle(fontSize: 9.5))),
+                // Label Machine
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input Machine (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_selectedMachine, style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10), // Kolom Jarak
+                // Label Type
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input Type (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_tyController.text, style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10), // Kolom Jarak
+                // Label S/N
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                // Input S/N (Latar Abu + Garis Bawah Tipis)
+                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 4, bottom: 4, left: 4, right: 4), child: pw.Text(_snController.text, style: pw.TextStyle(fontSize: 9.5))),
               ]),
             ],
           ),
