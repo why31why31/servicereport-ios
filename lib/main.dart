@@ -326,9 +326,14 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         // 1. Margin atas halaman dikurangi (dari 50 menjadi 35) agar lebih naik
         margin: const pw.EdgeInsets.only(left: 35, right: 35, top: 35, bottom: 40), 
         header: (pw.Context context) {
-          if (context.pageNumber != 1) return pw.Container(); 
+          // --- SPASI KHUSUS HALAMAN 2 DAN SETERUSNYA ---
+          // Memberikan jarak 40 pixel agar konten tidak mepet atas
+          if (context.pageNumber != 1) {
+            return pw.SizedBox(height: 40); 
+          }
+          
+          // --- LOGO KHUSUS HALAMAN 1 ---
           return pw.Container(
-            // 2. Jarak spasi di bawah logo dikurangi drastis (dari 20 menjadi 6)
             margin: const pw.EdgeInsets.only(bottom: 6),
             alignment: pw.Alignment.center, 
             child: pdfLogo != null 
