@@ -129,9 +129,12 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
   }
 }
 
+// ========================================================
+// PERUBAHAN 1: MODEL DATA (String size diganti double imageSize)
+// ========================================================
 class ActionBlockModel {
   List<File> imageFiles = []; 
-  String sizeLabel = 'Medium'; 
+  double imageSize = 130.0; // Nilai default Slider (setara Medium)
   final TextEditingController textController = TextEditingController();
 
   Future<String> toJsonString() async {
@@ -142,7 +145,7 @@ class ActionBlockModel {
     }
     return jsonEncode({
       'text': textController.text,
-      'size': sizeLabel,
+      'size': imageSize, // Simpan angka slider ke JSON
       'images': base64Images,
     });
   }
@@ -151,7 +154,18 @@ class ActionBlockModel {
     final block = ActionBlockModel();
     final map = jsonDecode(jsonStr);
     block.textController.text = map['text'] ?? '';
-    block.sizeLabel = map['size'] ?? 'Medium';
+    
+    // Sistem Keamanan untuk Draft Lama agar tidak error
+    var savedSize = map['size'];
+    if (savedSize is String) {
+      if (savedSize == 'Small') block.imageSize = 80.0;
+      else if (savedSize == 'Large') block.imageSize = 220.0;
+      else block.imageSize = 130.0; // Medium fallback
+    } else if (savedSize is num) {
+      block.imageSize = savedSize.toDouble();
+    } else {
+      block.imageSize = 130.0;
+    }
 
     if (map['images'] != null) {
       final tempDir = await getTemporaryDirectory();
@@ -323,16 +337,11 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        // 1. Margin atas halaman dikurangi (dari 50 menjadi 35) agar lebih naik
         margin: const pw.EdgeInsets.only(left: 35, right: 35, top: 35, bottom: 40), 
         header: (pw.Context context) {
-          // --- SPASI KHUSUS HALAMAN 2 DAN SETERUSNYA ---
-          // Memberikan jarak 40 pixel agar konten tidak mepet atas
           if (context.pageNumber != 1) {
             return pw.SizedBox(height: 40); 
           }
-          
-          // --- LOGO KHUSUS HALAMAN 1 ---
           return pw.Container(
             margin: const pw.EdgeInsets.only(bottom: 6),
             alignment: pw.Alignment.center, 
@@ -352,15 +361,13 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
           pw.Container(
             width: double.infinity,
             decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFF2B82C9)),
-            // 3. Padding balok biru sedikit dirapatkan
             padding: const pw.EdgeInsets.symmetric(vertical: 5),
             alignment: pw.Alignment.center,
             child: pw.Text("SERVICE REPORT", style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white, letterSpacing: 0.5)),
           ),
           
-          pw.SizedBox(height: 8), // Jarak antara balok biru ke tabel dirapatkan
+          pw.SizedBox(height: 8), 
           
-          // --- TABEL 1 (Technician, Date, Customer, Meet with) ---
           pw.Table(
             columnWidths: {
               0: const pw.FixedColumnWidth(65), 
@@ -392,9 +399,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             ],
           ),
           
-          pw.SizedBox(height: 8), // Jarak antara tabel atas dan bawah dirapatkan
+          pw.SizedBox(height: 8), 
           
-          // --- TABEL 2 (Machine, Type, S/N) ---
           pw.Table(
             columnWidths: {
               0: const pw.FixedColumnWidth(55), 
@@ -403,7 +409,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
               3: const pw.FixedColumnWidth(35), 
               4: const pw.FlexColumnWidth(0.9), 
               5: const pw.FixedColumnWidth(10), 
-              // 4. Lebar kolom S/N ditambah (dari 25 menjadi 30) agar tidak melipat ke bawah
               6: const pw.FixedColumnWidth(30), 
               7: const pw.FlexColumnWidth(0.8)  
             },
@@ -441,9 +446,10 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             crossAxisAlignment: pw.CrossAxisAlignment.start, 
             children: List.generate(_actionBlocks.length, (index) {
               final block = _actionBlocks[index];
-              double targetHeight = 130; 
-              if (block.sizeLabel == 'Small') targetHeight = 80;
-              if (block.sizeLabel == 'Large') targetHeight = 220;
+              // ========================================================
+              // PERUBAHAN 2: PDF TINGGI FOTO LANGSUNG BACA DARI SLIDER
+              // ========================================================
+              double targetHeight = block.imageSize; 
 
               return pw.Container(
                 margin: const pw.EdgeInsets.only(bottom: 12),
@@ -473,9 +479,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             }),
           ),
 
-          // ========================================================
           pw.Spacer(), 
-          // ========================================================
           
           pw.Container(
             padding: const pw.EdgeInsets.only(top: 10, left: 30, right: 30),
@@ -483,38 +487,34 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                // --- BLOK TANDA TANGAN KIRI (TEKNISI) ---
                 pw.Column(
-                  // MENGUBAH RATA KIRI MENJADI RATA TENGAH
                   crossAxisAlignment: pw.CrossAxisAlignment.center, 
                   children: [
                     pw.Text("Service Technician,", style: pw.TextStyle(fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
-                    pw.SizedBox(height: 15), // Jarak atas tanda tangan
+                    pw.SizedBox(height: 15),
                     
                     if (techSigBytes != null) 
                       pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(techSigBytes)))
                     else 
-                      pw.SizedBox(height: 40), // Ruang kosong jika belum ada tanda tangan
+                      pw.SizedBox(height: 40), 
                       
-                    pw.SizedBox(height: 10), // Jarak bawah tanda tangan
+                    pw.SizedBox(height: 10), 
                     pw.Text(_cbController.text.isNotEmpty ? _cbController.text : "...........................", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
                 
-                // --- BLOK TANDA TANGAN KANAN (CUSTOMER) ---
                 pw.Column(
-                  // MENGUBAH RATA KIRI MENJADI RATA TENGAH
                   crossAxisAlignment: pw.CrossAxisAlignment.center, 
                   children: [
                     pw.Text("Customer,", style: pw.TextStyle(fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
-                    pw.SizedBox(height: 15), // Jarak atas tanda tangan
+                    pw.SizedBox(height: 15), 
                     
                     if (custSigBytes != null) 
                       pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(custSigBytes)))
                     else 
-                      pw.SizedBox(height: 40), // Ruang kosong jika belum ada tanda tangan
+                      pw.SizedBox(height: 40), 
                       
-                    pw.SizedBox(height: 10), // Jarak bawah tanda tangan
+                    pw.SizedBox(height: 10), 
                     pw.Text(_mwController.text.isNotEmpty ? _mwController.text : "...........................", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
@@ -686,7 +686,10 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       String blockLogsText = "";
       for (var b in _actionBlocks) {
         blocksJsonList.add(await b.toJsonString()); 
-        blockLogsText += "\n- [Photo Block Logs (${b.sizeLabel}) - Total photos: ${b.imageFiles.length}]: ${b.textController.text}";
+        // ========================================================
+        // PERUBAHAN 3: KETERANGAN LOG DIGANTI JADI PIXEL BUKAN SMALL/MEDIUM
+        // ========================================================
+        blockLogsText += "\n- [Photo Block Logs (Size: ${b.imageSize.toInt()}px) - Total photos: ${b.imageFiles.length}]: ${b.textController.text}";
       }
 
       final newReport = LocalReport()
@@ -851,9 +854,10 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                         itemCount: _actionBlocks.length,
                         itemBuilder: (context, index) {
                           final block = _actionBlocks[index];
-                          double previewHeight = 110;
-                          if (block.sizeLabel == 'Small') previewHeight = 70;
-                          if (block.sizeLabel == 'Large') previewHeight = 170;
+                          // ========================================================
+                          // PERUBAHAN 4: PREVIEW UI DARI SLIDER
+                          // ========================================================
+                          double previewHeight = block.imageSize; // Menggunakan angka slider
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 14),
@@ -886,8 +890,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                       runSpacing: 8,
                                       children: block.imageFiles.map((file) {
                                         return Container(
-                                          height: previewHeight,
-                                          width: 100, 
+                                          height: previewHeight, // Tinggi menyesuaikan slider
+                                          width: previewHeight * 0.8, // Lebar proporsional
                                           decoration: BoxDecoration(
                                             border: Border.all(color: const Color(0xFFCBD5E1)),
                                             borderRadius: BorderRadius.circular(4),
@@ -900,8 +904,11 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                       }).toList(),
                                     ),
                                   ),
+                                
+                                // ========================================================
+                                // PERUBAHAN 5: UI TOMBOL ADD PHOTO & SLIDER MENYATU
+                                // ========================================================
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     ElevatedButton.icon(
                                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE2E8F0), elevation: 0),
@@ -929,26 +936,36 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                         );
                                       },
                                     ),
-                                    Row(
-                                      children: ['Small', 'Medium', 'Large'].map((size) {
-                                        bool isSelected = block.sizeLabel == size;
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                                          child: ChoiceChip(
-                                            label: Text(size, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black87)),
-                                            selected: isSelected,
-                                            selectedColor: const Color(0xFF0068C9),
-                                            backgroundColor: const Color(0xFFE2E8F0),
-                                            onSelected: (bool selected) {
-                                              if (selected) {
-                                                setState(() {
-                                                  block.sizeLabel = size; 
-                                                });
-                                              }
-                                            },
+                                    const SizedBox(width: 15),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Text("Image Size: ${block.imageSize.toInt()} px", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                                          SizedBox(
+                                            height: 25, // Agar jarak slider tidak terlalu tebal
+                                            child: SliderTheme(
+                                              data: SliderTheme.of(context).copyWith(
+                                                trackHeight: 3.0,
+                                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
+                                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
+                                              ),
+                                              child: Slider(
+                                                value: block.imageSize,
+                                                min: 60.0,
+                                                max: 280.0,
+                                                activeColor: const Color(0xFF0068C9),
+                                                inactiveColor: const Color(0xFFCBD5E1),
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    block.imageSize = newValue;
+                                                  });
+                                                },
+                                              ),
+                                            ),
                                           ),
-                                        );
-                                      }).toList(),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -1189,8 +1206,8 @@ class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> {
                 hintText: "Search by Customer, Machine or Tech...",
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF0068C9)),
                 suffixIcon: _searchController.text.isNotEmpty 
-                    ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _runSearchFilter(''); }) 
-                    : null,
+                  ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _runSearchFilter(''); }) 
+                  : null,
                 fillColor: Colors.white,
                 filled: true,
               ),
