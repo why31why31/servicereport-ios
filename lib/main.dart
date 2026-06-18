@@ -981,39 +981,36 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     children: [
                       const Text("✍️ SIGNATURE", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
                       const Divider(color: Color(0xFFE0E0E0)),
+                      const SizedBox(height: 15),
+                      
+                      // --- BLOK TANDA TANGAN TEKNISI (ATAS) ---
+                      const Text("Service Technician", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity, // Membuat kotak membentang penuh ke samping
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
+                        child: Signature(controller: _technicianSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)), // Tinggi ditambah menjadi 200
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(onPressed: () => _technicianSigController.clear(), child: const Text("Reset Signature", style: TextStyle(color: Colors.red, fontSize: 12))),
+                      ),
+                      
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Service Technician", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 6),
-                                Container(
-                                  decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
-                                  child: Signature(controller: _technicianSigController, height: 150, backgroundColor: const Color(0xFFF8F9FA)),
-                                ),
-                                TextButton(onPressed: () => _technicianSigController.clear(), child: const Text("Reset Signature", style: TextStyle(color: Colors.red, fontSize: 11))),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Customer", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 6),
-                                Container(
-                                  decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
-                                  child: Signature(controller: _customerSigController, height: 150, backgroundColor: const Color(0xFFF8F9FA)),
-                                ),
-                                TextButton(onPressed: () => _customerSigController.clear(), child: const Text("Reset Signature", style: TextStyle(color: Colors.red, fontSize: 11))),
-                              ],
-                            ),
-                          ),
-                        ],
+                      const Divider(color: Color(0xFFE0E0E0)),
+                      const SizedBox(height: 15),
+
+                      // --- BLOK TANDA TANGAN CUSTOMER (BAWAH) ---
+                      const Text("Customer", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity, // Membuat kotak membentang penuh ke samping
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
+                        child: Signature(controller: _customerSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)), // Tinggi ditambah menjadi 200
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(onPressed: () => _customerSigController.clear(), child: const Text("Reset Signature", style: TextStyle(color: Colors.red, fontSize: 12))),
                       ),
                     ],
                   ),
