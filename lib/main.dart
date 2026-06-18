@@ -468,6 +468,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             }),
           ),
 
+          // ========================================================
           pw.Spacer(), 
           // ========================================================
           
@@ -477,24 +478,39 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
+                // --- BLOK TANDA TANGAN KIRI (TEKNISI) ---
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  // MENGUBAH RATA KIRI MENJADI RATA TENGAH
+                  crossAxisAlignment: pw.CrossAxisAlignment.center, 
                   children: [
-                    pw.Text("Service Technician,", style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic)),
-                    pw.SizedBox(height: 35),
-                    if (techSigBytes != null) pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(techSigBytes))),
-                    pw.SizedBox(height: 4),
-                    pw.Text(_cbController.text.isNotEmpty ? _cbController.text : "...........................", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                    pw.Text("Service Technician,", style: pw.TextStyle(fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
+                    pw.SizedBox(height: 15), // Jarak atas tanda tangan
+                    
+                    if (techSigBytes != null) 
+                      pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(techSigBytes)))
+                    else 
+                      pw.SizedBox(height: 40), // Ruang kosong jika belum ada tanda tangan
+                      
+                    pw.SizedBox(height: 10), // Jarak bawah tanda tangan
+                    pw.Text(_cbController.text.isNotEmpty ? _cbController.text : "...........................", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
+                
+                // --- BLOK TANDA TANGAN KANAN (CUSTOMER) ---
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  // MENGUBAH RATA KIRI MENJADI RATA TENGAH
+                  crossAxisAlignment: pw.CrossAxisAlignment.center, 
                   children: [
-                    pw.Text("Customer,", style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic)),
-                    pw.SizedBox(height: 35),
-                    if (custSigBytes != null) pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(custSigBytes))),
-                    pw.SizedBox(height: 4),
-                    pw.Text(_mwController.text.isNotEmpty ? _mwController.text : "...........................", style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                    pw.Text("Customer,", style: pw.TextStyle(fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
+                    pw.SizedBox(height: 15), // Jarak atas tanda tangan
+                    
+                    if (custSigBytes != null) 
+                      pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(custSigBytes)))
+                    else 
+                      pw.SizedBox(height: 40), // Ruang kosong jika belum ada tanda tangan
+                      
+                    pw.SizedBox(height: 10), // Jarak bawah tanda tangan
+                    pw.Text(_mwController.text.isNotEmpty ? _mwController.text : "...........................", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
               ],
