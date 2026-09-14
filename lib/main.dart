@@ -275,11 +275,14 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTimeRange? picked = await showDateRangePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020), 
-      lastDate: DateTime(2035),  
+      initialDateRange: DateTimeRange(
+        start: DateTime.now(),
+        end: DateTime.now(),
+      ),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -293,9 +296,19 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         );
       },
     );
+
     if (picked != null) {
       setState(() {
-        _dateController.text = picked.toString().split(' ')[0]; 
+        String start = picked.start.toString().split(' ')[0];
+        String end = picked.end.toString().split(' ')[0];
+        
+        // Jika hanya klik 1 tanggal, tampilkan 1 saja. Jika beda, tampilkan rentangnya.
+        if (start == end) {
+          _dateController.text = start;
+        } else {
+          // Menggunakan ' to ' agar tidak error saat dijadikan nama file PDF (hindari karakter '/')
+          _dateController.text = "$start to $end"; 
+        }
       });
     }
   }
@@ -589,7 +602,9 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
 
     String namaHari = "Monday";
     try {
-      DateTime parsedDate = DateTime.parse(_dateController.text);
+      // Potong teks dan ambil tanggal awalnya saja untuk menentukan nama hari awal
+      String firstDatePart = _dateController.text.split(' to ')[0];
+      DateTime parsedDate = DateTime.parse(firstDatePart);
       List<String> hariEnglish = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       namaHari = hariEnglish[parsedDate.weekday % 7];
     } catch (e) {
