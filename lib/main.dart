@@ -321,7 +321,20 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   }
 
   Future<pw.Document> _buildActivePdfDocument() async {
-    final pdf = pw.Document();
+    // 1. Load font Roboto dari Google Fonts (Mendukung karakter & simbol)
+    final fontRegular = await PdfGoogleFonts.robotoRegular();
+    final fontBold = await PdfGoogleFonts.robotoBold();
+    final fontItalic = await PdfGoogleFonts.robotoItalic();
+
+    // 2. Set font tersebut ke dalam pw.Document
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: fontRegular,
+        bold: fontBold,
+        italic: fontItalic,
+      ),
+    );
+
     final techSigBytes = await _technicianSigController.toPngBytes();
     final custSigBytes = await _customerSigController.toPngBytes();
 
