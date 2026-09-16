@@ -217,7 +217,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
 
   final String _googleSheetsUrl = "https://script.google.com/macros/s/AKfycbxfsxh32nXy93tMGqXzdWN7g4p3zDnPYZFrlqGGR9tsSYAzEwI92cE041Cm17kBdMKohw/exec";
 
-  final List<String> _machines = ["Siebler", "Noack", "Kilian", "Romaco", "Promatic", "MG2", "Truking", "FrymaKoruma", "Stephan", "Other Machine"];
+  final List<String> _machines = ["Siebler", "Noack", "Kilian", "Romaco", "Macofar", "Promatic", "MG2", "Truking", "FrymaKoruma", "Stephan", "Other Machine"];
   final List<String> _statuses = ["Continue", "Pending", "Done"];
 
   final List<ActionBlockModel> _actionBlocks = [];
@@ -261,7 +261,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       }
 
     } else {
-      _dateController.text = DateTime.now().toString().split(' ')[0];
+      // Ganti DateTime.now().toString().split(' ')[0] menjadi:
+_dateController.text = _formatDate(DateTime.now());
       _activeDraftId = null;
     }
   }
@@ -334,7 +335,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     widget.onClearLoad();
     setState(() {
       _activeDraftId = null;
-      _dateController.text = DateTime.now().toString().split(' ')[0];
+      // Ganti DateTime.now().toString().split(' ')[0] menjadi:
+_dateController.text = _formatDate(DateTime.now());
     });
   }
 
