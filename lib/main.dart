@@ -273,6 +273,10 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       _checkAndLoadIncomingDraft();
     }
   }
+// Helper untuk mengubah DateTime menjadi format dd-mm-yyyy (misal: 11-09-2026)
+  String _formatDate(DateTime d) {
+    return "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}";
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
@@ -299,15 +303,16 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
 
     if (picked != null) {
       setState(() {
-        String start = picked.start.toString().split(' ')[0];
-        String end = picked.end.toString().split(' ')[0];
-        
-        // Jika hanya klik 1 tanggal, tampilkan 1 saja. Jika beda, tampilkan rentangnya.
-        if (start == end) {
-          _dateController.text = start;
+        String startStr = _formatDate(picked.start);
+        String endStr = _formatDate(picked.end);
+
+        // Jika hanya 1 hari (start sama dengan end)
+        if (picked.start.year == picked.end.year &&
+            picked.start.month == picked.end.month &&
+            picked.start.day == picked.end.day) {
+          _dateController.text = startStr;
         } else {
-          // Menggunakan ' to ' agar tidak error saat dijadikan nama file PDF (hindari karakter '/')
-          _dateController.text = "$start to $end"; 
+          _dateController.text = "$startStr to $endStr";
         }
       });
     }
@@ -602,11 +607,19 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
 
     String namaHari = "Monday";
     try {
-      // Potong teks dan ambil tanggal awalnya saja untuk menentukan nama hari awal
+      // Mengambil tanggal awal (misal dari "11-09-2026 to 16-09-2026" diambil "11-09-2026")
       String firstDatePart = _dateController.text.split(' to ')[0];
-      DateTime parsedDate = DateTime.parse(firstDatePart);
-      List<String> hariEnglish = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-      namaHari = hariEnglish[parsedDate.weekday % 7];
+      List<String> parts = firstDatePart.split('-');
+
+      if (parts.length == 3) {
+        int day = int.parse(parts[0]);
+        int month = int.parse(parts[1]);
+        int year = int.parse(parts[2]);
+
+        DateTime parsedDate = DateTime(year, month, day);
+        List<String> hariEnglish = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        namaHari = hariEnglish[parsedDate.weekday % 7];
+      }
     } catch (e) {
       namaHari = "-";
     }
