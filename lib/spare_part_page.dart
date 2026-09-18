@@ -45,6 +45,8 @@ class SparePartRecommendationPage extends StatefulWidget {
 class _SparePartRecommendationPageState extends State<SparePartRecommendationPage> {
   final _customerController = TextEditingController();
   final _machineController = TextEditingController();
+  final _machineTypeController = TextEditingController(); // Controller Type Mesin
+  final _serialNoController = TextEditingController();    // Controller Serial No
   final _technicianController = TextEditingController();
   final _dateController = TextEditingController();
   final _notesController = TextEditingController();
@@ -119,14 +121,18 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
   ];
 
   final List<String> _machineList = [
-    "Kilian Tablet Press",
-    "Siebler HM 2",
-    "Bosch",
-    "Fette",
-    "Uhlmann",
+    "Kilian",
+    "Siebler",
+    "Macofar",
+    "Noack",
+    "Promatic",
     "Romaco",
-    "Sejong",
-    "Korsch",
+    "Truking",
+    "MG2",
+    "FrymaKoruma",
+    "Stephan",
+    "TrukingFrewitt",
+    "Lytzen",
     "Other (Type manually)"
   ];
 
@@ -317,6 +323,8 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
   void dispose() {
     _customerController.dispose();
     _machineController.dispose();
+    _machineTypeController.dispose();
+    _serialNoController.dispose();
     _technicianController.dispose();
     _dateController.dispose();
     _notesController.dispose();
@@ -396,6 +404,8 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
       _currentDraftId = null;
       _customerController.clear();
       _machineController.clear();
+      _machineTypeController.clear();
+      _serialNoController.clear();
       _technicianController.clear();
       _notesController.clear();
       _selectedTechnicians.clear();
@@ -540,8 +550,15 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                   pw.SizedBox(height: 4),
                   pw.Row(
                     children: [
-                      pw.Expanded(child: pw.Text("Machine / Type: ${_machineController.text.isEmpty ? '-' : _machineController.text}", style: pw.TextStyle(fontSize: 9.5))),
-                      pw.Expanded(child: pw.Text("Technician: ${_technicianController.text.isEmpty ? '-' : _technicianController.text}", style: pw.TextStyle(fontSize: 9.5))),
+                      pw.Expanded(child: pw.Text("Machine Brand: ${_machineController.text.isEmpty ? '-' : _machineController.text}", style: const pw.TextStyle(fontSize: 9.5))),
+                      pw.Expanded(child: pw.Text("Technician: ${_technicianController.text.isEmpty ? '-' : _technicianController.text}", style: const pw.TextStyle(fontSize: 9.5))),
+                    ],
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Row(
+                    children: [
+                      pw.Expanded(child: pw.Text("Machine Type: ${_machineTypeController.text.isEmpty ? '-' : _machineTypeController.text}", style: const pw.TextStyle(fontSize: 9.5))),
+                      pw.Expanded(child: pw.Text("Serial No: ${_serialNoController.text.isEmpty ? '-' : _serialNoController.text}", style: const pw.TextStyle(fontSize: 9.5))),
                     ],
                   ),
                 ],
@@ -684,7 +701,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
     summary.writeln("🛠️ *SPARE PART RECOMMENDATION LIST*");
     summary.writeln("=================================");
     summary.writeln("👤 Customer: ${_customerController.text.isEmpty ? '-' : _customerController.text}");
-    summary.writeln("⚙️ Machine: ${_machineController.text.isEmpty ? '-' : _machineController.text}");
+    summary.writeln("⚙️ Machine Brand: ${_machineController.text.isEmpty ? '-' : _machineController.text}");
+    if (_machineTypeController.text.isNotEmpty) summary.writeln("🏷️ Machine Type: ${_machineTypeController.text}");
+    if (_serialNoController.text.isNotEmpty) summary.writeln("🔢 Serial No: ${_serialNoController.text}");
     summary.writeln("👨‍🔧 Technician: ${_technicianController.text.isEmpty ? '-' : _technicianController.text}");
     summary.writeln("📅 Date: ${_dateController.text}");
     summary.writeln("\n📋 *RECOMMENDED PARTS:*");
@@ -821,13 +840,13 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                       ),
                     ],
 
-                    // MACHINE DROPDOWN
-                    _buildLabel("Machine / Type"),
+                    // MACHINE BRAND DROPDOWN
+                    _buildLabel("Machine Brand"),
                     DropdownButtonFormField<String>(
                       isExpanded: true,
                       value: _selectedMachine,
                       decoration: const InputDecoration(
-                        hintText: "Select Machine",
+                        hintText: "Select Machine Brand",
                         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
                       items: _machineList.map((String value) {
@@ -854,11 +873,46 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                       TextFormField(
                         controller: _machineController,
                         decoration: const InputDecoration(
-                          hintText: "Enter machine name manually",
+                          hintText: "Enter machine brand manually",
                           prefixIcon: Icon(Icons.edit, size: 18),
                         ),
                       ),
                     ],
+
+                    // MACHINE TYPE & SERIAL NO (INPUT FIELDS)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("Machine Type"),
+                              TextFormField(
+                                controller: _machineTypeController,
+                                decoration: const InputDecoration(
+                                  hintText: "e.g., S 250 Smart",
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("Serial No"),
+                              TextFormField(
+                                controller: _serialNoController,
+                                decoration: const InputDecoration(
+                                  hintText: "e.g., SN-202604",
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
 
                     // MULTI-SELECT TEKNISI
                     _buildLabel("Technician Name"),
