@@ -13,13 +13,19 @@ import 'package:printing/printing.dart';
 import 'dart:io';
 import 'dart:convert'; 
 import 'package:http/http.dart' as http; 
+import 'spare_part_page.dart';
+import 'spare_part_draft.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   final dir = await getApplicationDocumentsDirectory();
+  
   final isar = await Isar.open(
-    [LocalReportSchema],
+    [
+      LocalReportSchema, 
+      SparePartDraftSchema,
+    ],
     directory: dir.path,
   );
 
@@ -70,6 +76,7 @@ class MainNavigationContainer extends StatefulWidget {
 class _MainNavigationContainerState extends State<MainNavigationContainer> {
   int _currentIndex = 0;
   LocalReport? _selectedReportToEdit; 
+  SparePartDraft? _selectedPartDraftToEdit;
   late List<Widget> _pages;
 
   @override
@@ -99,6 +106,23 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
             _refreshPages();
           });
         },
+        onLoadPartDraft: (partDraft) {
+          setState(() {
+            _selectedPartDraftToEdit = partDraft;
+            _currentIndex = 2; 
+            _refreshPages();
+          });
+        },
+      ),
+      SparePartRecommendationPage(
+        isar: widget.isar,
+        loadDraftData: _selectedPartDraftToEdit,
+        onClearLoad: () {
+          setState(() {
+            _selectedPartDraftToEdit = null;
+            _refreshPages();
+          });
+        },
       ),
     ];
   }
@@ -112,29 +136,28 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF0068C9),
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
-            _refreshPages(); 
+            _refreshPages();
           });
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.edit_document), label: 'Form Entry'),
           BottomNavigationBarItem(icon: Icon(Icons.history_toggle_off), label: 'History & Drafts'),
+          BottomNavigationBarItem(icon: Icon(Icons.build_circle_outlined), label: 'Part List'),
         ],
       ),
     );
   }
 }
 
-// ========================================================
-// PERUBAHAN 1: MODEL DATA (String size diganti double imageSize)
-// ========================================================
 class ActionBlockModel {
   List<File> imageFiles = []; 
-  double imageSize = 130.0; // Nilai default Slider (setara Medium)
+  double imageSize = 130.0;
   final TextEditingController textController = TextEditingController();
 
   Future<String> toJsonString() async {
@@ -145,7 +168,7 @@ class ActionBlockModel {
     }
     return jsonEncode({
       'text': textController.text,
-      'size': imageSize, // Simpan angka slider ke JSON
+      'size': imageSize,
       'images': base64Images,
     });
   }
@@ -155,12 +178,11 @@ class ActionBlockModel {
     final map = jsonDecode(jsonStr);
     block.textController.text = map['text'] ?? '';
     
-    // Sistem Keamanan untuk Draft Lama agar tidak error
     var savedSize = map['size'];
     if (savedSize is String) {
       if (savedSize == 'Small') block.imageSize = 80.0;
       else if (savedSize == 'Large') block.imageSize = 220.0;
-      else block.imageSize = 130.0; // Medium fallback
+      else block.imageSize = 130.0;
     } else if (savedSize is num) {
       block.imageSize = savedSize.toDouble();
     } else {
@@ -215,6 +237,68 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   bool _isSyncing = false; 
   int? _activeDraftId; 
 
+  // Multi-select Teknisi
+  List<String> _selectedTechnicians = [];
+  final List<String> _techniciansList = [
+    "Asep Wahyu",
+    "Rangga W",
+    "Wahyu",
+    "Ali Akbar",
+    "Karim"
+  ];
+
+  // Customer Dropdown
+  String? _selectedCustomer;
+  bool _isCustomCustomer = false;
+
+  final List<String> _customerList = [
+    "PT Kalbe Farma",
+    "PT Dankos Laboratories Tbk",
+    "PT Hexpharm Jaya",
+    "PT Darya Varia Citeureup",
+    "PT Darya Varia Gn.Putri",
+    "PT Medifarma Laboratories",
+    "PT Dexa Medica",
+    "PT Ferron",
+    "PT Mahakam Beta Farma",
+    "PT Supra Ferbindo Farma",
+    "PT Tempo Scan Pacific",
+    "PT Abbot Indonesia",
+    "PT Actavis",
+    "PT Bayer Indonesia Tbk",
+    "PT Bernofarma",
+    "PT Bio Farma",
+    "PT Bufa Aneka",
+    "PT Pratapa Nirmala (Fahrenheit)",
+    "PT First Medifarma",
+    "PT Henson Farma",
+    "PT Indofarma",
+    "PT Interbat",
+    "PT Ikapharmindo Putramas",
+    "PT Kimia Farma",
+    "PT Konimex",
+    "PT Lapi Laboratories",
+    "PT Meiji Indonesia",
+    "PT Meprofarm",
+    "PT Merck Indonesia",
+    "PT Mersifarma",
+    "PT Otsuka Indonesia",
+    "PT Otto Pharma",
+    "PT Pfizer Indonesia Tbk",
+    "PT Phapros",
+    "PT Pharos Indonesia",
+    "PT Pyridam",
+    "PT Saka Farma Laboratories",
+    "PT Sanbe Farma",
+    "PT Caprifarmindo",
+    "PT Combiphar",
+    "PT Takeda Indonesia",
+    "PT Tanabe Indonesia",
+    "PT Tropica Mas Pharmaceuticals",
+    "PT Zenith Pharmaceutical",
+    "Other (Type manually)"
+  ];
+
   final String _googleSheetsUrl = "https://script.google.com/macros/s/AKfycbxfsxh32nXy93tMGqXzdWN7g4p3zDnPYZFrlqGGR9tsSYAzEwI92cE041Cm17kBdMKohw/exec";
 
   final List<String> _machines = ["Siebler", "Noack", "Kilian", "Romaco", "Macofar", "Promatic", "MG2", "Truking", "FrymaKoruma", "Stephan", "Other Machine"];
@@ -239,9 +323,10 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       setState(() {
         _activeDraftId = data.id;
         _cbController.text = data.completeBy ?? '';
+        _selectedTechnicians = data.completeBy?.isNotEmpty == true ? data.completeBy!.split('/') : [];
         _cuController.text = data.customerName ?? '';
         _mwController.text = data.meetWith ?? '';
-        _dateController.text = data.date ?? DateTime.now().toString().split(' ')[0];
+        _dateController.text = data.date ?? _formatDate(DateTime.now());
         _tyController.text = data.machineType ?? '';
         _snController.text = data.serialNo ?? '';
         _prController.text = data.problemDescription ?? '';
@@ -249,6 +334,19 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         
         if (_machines.contains(data.machine)) _selectedMachine = data.machine!;
         if (_statuses.contains(data.status)) _selectedStatus = data.status!;
+
+        if (data.customerName != null && data.customerName!.isNotEmpty) {
+          if (_customerList.contains(data.customerName)) {
+            _selectedCustomer = data.customerName;
+            _isCustomCustomer = false;
+          } else {
+            _selectedCustomer = 'Other (Type manually)';
+            _isCustomCustomer = true;
+          }
+        } else {
+          _selectedCustomer = null;
+          _isCustomCustomer = false;
+        }
       });
 
       if (data.savedActionBlocks != null && data.savedActionBlocks!.isNotEmpty) {
@@ -261,10 +359,69 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       }
 
     } else {
-      // Ganti DateTime.now().toString().split(' ')[0] menjadi:
-_dateController.text = _formatDate(DateTime.now());
+      _dateController.text = _formatDate(DateTime.now());
       _activeDraftId = null;
+      _selectedCustomer = null;
+      _isCustomCustomer = false;
+      _selectedTechnicians.clear();
+      _cbController.clear();
     }
+  }
+
+  void _showTechnicianMultiSelectDialog() async {
+    List<String> tempSelected = List.from(_selectedTechnicians);
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text("Select Technician(s)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: _techniciansList.map((tech) {
+                    final isChecked = tempSelected.contains(tech);
+                    return CheckboxListTile(
+                      title: Text(tech, style: const TextStyle(fontSize: 14)),
+                      value: isChecked,
+                      activeColor: const Color(0xFF0068C9),
+                      onChanged: (bool? checked) {
+                        setDialogState(() {
+                          if (checked == true) {
+                            tempSelected.add(tech);
+                          } else {
+                            tempSelected.remove(tech);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("CANCEL"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0068C9)),
+                  onPressed: () {
+                    setState(() {
+                      _selectedTechnicians = tempSelected;
+                      _cbController.text = _selectedTechnicians.join('/');
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text("OK", style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -274,7 +431,7 @@ _dateController.text = _formatDate(DateTime.now());
       _checkAndLoadIncomingDraft();
     }
   }
-// Helper untuk mengubah DateTime menjadi format dd-mm-yyyy (misal: 11-09-2026)
+
   String _formatDate(DateTime d) {
     return "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}";
   }
@@ -307,7 +464,6 @@ _dateController.text = _formatDate(DateTime.now());
         String startStr = _formatDate(picked.start);
         String endStr = _formatDate(picked.end);
 
-        // Jika hanya 1 hari (start sama dengan end)
         if (picked.start.year == picked.end.year &&
             picked.start.month == picked.end.month &&
             picked.start.day == picked.end.day) {
@@ -332,21 +488,21 @@ _dateController.text = _formatDate(DateTime.now());
     _technicianSigController.clear();
     _customerSigController.clear();
     _actionBlocks.clear();
+    _selectedTechnicians.clear();
     widget.onClearLoad();
     setState(() {
       _activeDraftId = null;
-      // Ganti DateTime.now().toString().split(' ')[0] menjadi:
-_dateController.text = _formatDate(DateTime.now());
+      _dateController.text = _formatDate(DateTime.now());
+      _selectedCustomer = null;
+      _isCustomCustomer = false;
     });
   }
 
   Future<pw.Document> _buildActivePdfDocument() async {
-    // 1. Load font Roboto dari Google Fonts (Mendukung karakter & simbol)
     final fontRegular = await PdfGoogleFonts.robotoRegular();
     final fontBold = await PdfGoogleFonts.robotoBold();
     final fontItalic = await PdfGoogleFonts.robotoItalic();
 
-    // 2. Set font tersebut ke dalam pw.Document
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
         base: fontRegular,
@@ -479,9 +635,6 @@ _dateController.text = _formatDate(DateTime.now());
             crossAxisAlignment: pw.CrossAxisAlignment.start, 
             children: List.generate(_actionBlocks.length, (index) {
               final block = _actionBlocks[index];
-              // ========================================================
-              // PERUBAHAN 2: PDF TINGGI FOTO LANGSUNG BACA DARI SLIDER
-              // ========================================================
               double targetHeight = block.imageSize; 
 
               return pw.Container(
@@ -609,7 +762,6 @@ _dateController.text = _formatDate(DateTime.now());
 
     String namaHari = "Monday";
     try {
-      // Mengambil tanggal awal (misal dari "11-09-2026 to 16-09-2026" diambil "11-09-2026")
       String firstDatePart = _dateController.text.split(' to ')[0];
       List<String> parts = firstDatePart.split('-');
 
@@ -729,9 +881,6 @@ _dateController.text = _formatDate(DateTime.now());
       String blockLogsText = "";
       for (var b in _actionBlocks) {
         blocksJsonList.add(await b.toJsonString()); 
-        // ========================================================
-        // PERUBAHAN 3: KETERANGAN LOG DIGANTI JADI PIXEL BUKAN SMALL/MEDIUM
-        // ========================================================
         blockLogsText += "\n- [Photo Block Logs (Size: ${b.imageSize.toInt()}px) - Total photos: ${b.imageFiles.length}]: ${b.textController.text}";
       }
 
@@ -837,12 +986,57 @@ _dateController.text = _formatDate(DateTime.now());
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
+              // MULTI-SELECT TEKNISI
               _buildStreamlitLabel("Complete by *"),
-              TextFormField(controller: _cbController, validator: (v) => v!.isEmpty ? 'This field is required' : null),
+              TextFormField(
+                controller: _cbController,
+                readOnly: true,
+                onTap: _showTechnicianMultiSelectDialog,
+                decoration: const InputDecoration(
+                  hintText: "Select Technician(s)",
+                  suffixIcon: Icon(Icons.arrow_drop_down, color: Color(0xFF0068C9)),
+                ),
+                validator: (v) => v!.isEmpty ? 'This field is required' : null,
+              ),
               
+              // DROPDOWN CUSTOMER
               _buildStreamlitLabel("Customer"),
-              TextFormField(controller: _cuController),
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                value: _selectedCustomer,
+                decoration: const InputDecoration(
+                  hintText: "Select Customer",
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                items: _customerList.map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: const TextStyle(fontSize: 13)),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedCustomer = newValue;
+                    if (newValue == 'Other (Type manually)') {
+                      _isCustomCustomer = true;
+                      _cuController.clear();
+                    } else {
+                      _isCustomCustomer = false;
+                      _cuController.text = newValue ?? '';
+                    }
+                  });
+                },
+              ),
+              if (_isCustomCustomer) ...[
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _cuController,
+                  decoration: const InputDecoration(
+                    hintText: "Enter customer name manually",
+                    prefixIcon: Icon(Icons.edit, size: 18),
+                  ),
+                ),
+              ],
 
               _buildStreamlitLabel("Meet with"),
               TextFormField(controller: _mwController),
@@ -897,10 +1091,7 @@ _dateController.text = _formatDate(DateTime.now());
                         itemCount: _actionBlocks.length,
                         itemBuilder: (context, index) {
                           final block = _actionBlocks[index];
-                          // ========================================================
-                          // PERUBAHAN 4: PREVIEW UI DARI SLIDER
-                          // ========================================================
-                          double previewHeight = block.imageSize; // Menggunakan angka slider
+                          double previewHeight = block.imageSize;
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 14),
@@ -933,8 +1124,8 @@ _dateController.text = _formatDate(DateTime.now());
                                       runSpacing: 8,
                                       children: block.imageFiles.map((file) {
                                         return Container(
-                                          height: previewHeight, // Tinggi menyesuaikan slider
-                                          width: previewHeight * 0.8, // Lebar proporsional
+                                          height: previewHeight,
+                                          width: previewHeight * 0.8,
                                           decoration: BoxDecoration(
                                             border: Border.all(color: const Color(0xFFCBD5E1)),
                                             borderRadius: BorderRadius.circular(4),
@@ -948,9 +1139,6 @@ _dateController.text = _formatDate(DateTime.now());
                                     ),
                                   ),
                                 
-                                // ========================================================
-                                // PERUBAHAN 5: UI TOMBOL ADD PHOTO & SLIDER MENYATU
-                                // ========================================================
                                 Row(
                                   children: [
                                     ElevatedButton.icon(
@@ -986,7 +1174,7 @@ _dateController.text = _formatDate(DateTime.now());
                                         children: [
                                           Text("Image Size: ${block.imageSize.toInt()} px", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
                                           SizedBox(
-                                            height: 25, // Agar jarak slider tidak terlalu tebal
+                                            height: 25,
                                             child: SliderTheme(
                                               data: SliderTheme.of(context).copyWith(
                                                 trackHeight: 3.0,
@@ -1064,13 +1252,12 @@ _dateController.text = _formatDate(DateTime.now());
                       const Divider(color: Color(0xFFE0E0E0)),
                       const SizedBox(height: 15),
                       
-                      // --- BLOK TANDA TANGAN TEKNISI (ATAS) ---
                       const Text("Service Technician", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Container(
-                        width: double.infinity, // Membuat kotak membentang penuh ke samping
+                        width: double.infinity,
                         decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
-                        child: Signature(controller: _technicianSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)), // Tinggi ditambah menjadi 200
+                        child: Signature(controller: _technicianSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)),
                       ),
                       Align(
                         alignment: Alignment.centerRight,
@@ -1081,13 +1268,12 @@ _dateController.text = _formatDate(DateTime.now());
                       const Divider(color: Color(0xFFE0E0E0)),
                       const SizedBox(height: 15),
 
-                      // --- BLOK TANDA TANGAN CUSTOMER (BAWAH) ---
                       const Text("Customer", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Container(
-                        width: double.infinity, // Membuat kotak membentang penuh ke samping
+                        width: double.infinity,
                         decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
-                        child: Signature(controller: _customerSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)), // Tinggi ditambah menjadi 200
+                        child: Signature(controller: _customerSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)),
                       ),
                       Align(
                         alignment: Alignment.centerRight,
@@ -1173,23 +1359,38 @@ _dateController.text = _formatDate(DateTime.now());
 
 class HistoryAndDraftPage extends StatefulWidget {
   final Isar isar;
-  final Function(LocalReport) onLoadDraft; 
+  final Function(LocalReport) onLoadDraft;
+  final Function(SparePartDraft)? onLoadPartDraft;
 
-  const HistoryAndDraftPage({super.key, required this.isar, required this.onLoadDraft});
+  const HistoryAndDraftPage({
+    super.key,
+    required this.isar,
+    required this.onLoadDraft,
+    this.onLoadPartDraft,
+  });
 
   @override
   State<HistoryAndDraftPage> createState() => _HistoryAndDraftPageState();
 }
 
-class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> {
+class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
   List<LocalReport> _allLocalReports = [];
   List<LocalReport> _filteredReports = [];
-  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _loadHistoryFromIsar();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadHistoryFromIsar() async {
@@ -1225,9 +1426,11 @@ class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> {
       await widget.isar.localReports.delete(id);
     });
     _loadHistoryFromIsar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('🗑️ Report successfully deleted from storage.')),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🗑️ Report successfully deleted from storage.')),
+      );
+    }
   }
 
   @override
@@ -1237,82 +1440,205 @@ class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> {
         title: const Text('Local Reports & Drafts Storage', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF0F172A), 
         elevation: 0,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: const Color(0xFF0068C9),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey,
+          tabs: const [
+            Tab(text: 'Service Reports'),
+            Tab(text: 'Part Lists'),
+          ],
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _searchController,
-              onChanged: _runSearchFilter,
-              decoration: InputDecoration(
-                hintText: "Search by Customer, Machine or Tech...",
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF0068C9)),
-                suffixIcon: _searchController.text.isNotEmpty 
-                  ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _runSearchFilter(''); }) 
-                  : null,
-                fillColor: Colors.white,
-                filled: true,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: _filteredReports.isEmpty
-                  ? const Center(child: Text("No local reports or drafts found.", style: TextStyle(color: Colors.grey)))
-                  : ListView.builder(
-                      itemCount: _filteredReports.length,
-                      itemBuilder: (context, index) {
-                        final report = _filteredReports[index];
-                        final bool isSynced = report.isSynced;
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _searchController,
+                  onChanged: _runSearchFilter,
+                  decoration: InputDecoration(
+                    hintText: "Search by Customer, Machine or Tech...",
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF0068C9)),
+                    suffixIcon: _searchController.text.isNotEmpty 
+                      ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _runSearchFilter(''); }) 
+                      : null,
+                    fillColor: Colors.white,
+                    filled: true,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: _filteredReports.isEmpty
+                      ? const Center(child: Text("No local reports or drafts found.", style: TextStyle(color: Colors.grey)))
+                      : ListView.builder(
+                          itemCount: _filteredReports.length,
+                          itemBuilder: (context, index) {
+                            final report = _filteredReports[index];
+                            final bool isSynced = report.isSynced;
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Colors.grey[200]!)),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: isSynced ? const Color(0xFFE6F4EA) : const Color(0xFFFFF7ED),
-                              child: Icon(
-                                isSynced ? Icons.cloud_done : Icons.edit_note, 
-                                color: isSynced ? const Color(0xFF137333) : const Color(0xFFC2410C)
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Colors.grey[200]!)),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: isSynced ? const Color(0xFFE6F4EA) : const Color(0xFFFFF7ED),
+                                  child: Icon(
+                                    isSynced ? Icons.cloud_done : Icons.edit_note, 
+                                    color: isSynced ? const Color(0xFF137333) : const Color(0xFFC2410C)
+                                  ),
+                                ),
+                                title: Text(report.customerName?.isNotEmpty == true ? report.customerName! : 'Unknown Customer', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                subtitle: Text("Machine: ${report.machine ?? '-'} | Date: ${report.date ?? '-'}\nStatus: ${report.status ?? '-'}", style: const TextStyle(fontSize: 11)),
+                                trailing: Wrap(
+                                  spacing: 4,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.open_in_new, color: Color(0xFF0068C9), size: 20),
+                                      onPressed: () => widget.onLoadDraft(report), 
+                                      tooltip: 'Load Data to Form',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => AlertDialog(
+                                            title: const Text("Delete Report", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                            content: const Text("Are you sure you want to permanently delete this report from device?", style: TextStyle(fontSize: 12)),
+                                            actions: [
+                                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("CANCEL")),
+                                              TextButton(onPressed: () { Navigator.pop(ctx); _deleteReport(report.id); }, child: const Text("DELETE", style: TextStyle(color: Colors.red))),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            title: Text(report.customerName?.isNotEmpty == true ? report.customerName! : 'Unknown Customer', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            subtitle: Text("Machine: ${report.machine ?? '-'} | Date: ${report.date ?? '-'}\nStatus: ${report.status ?? '-'}", style: const TextStyle(fontSize: 11)),
-                            trailing: Wrap(
-                              spacing: 4,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.open_in_new, color: Color(0xFF0068C9), size: 20),
-                                  onPressed: () => widget.onLoadDraft(report), 
-                                  tooltip: 'Load Data to Form',
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text("Delete Report", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                                        content: const Text("Are you sure you want to permanently delete this report from device?", style: TextStyle(fontSize: 12)),
-                                        actions: [
-                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("CANCEL")),
-                                          TextButton(onPressed: () { Navigator.pop(ctx); _deleteReport(report.id); }, child: const Text("DELETE", style: TextStyle(color: Colors.red))),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+          SparePartDraftListView(
+            isar: widget.isar,
+            onLoadDraft: (partDraft) {
+              widget.onLoadPartDraft?.call(partDraft);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SparePartDraftListView extends StatelessWidget {
+  final Isar isar;
+  final Function(SparePartDraft) onLoadDraft;
+
+  const SparePartDraftListView({
+    super.key,
+    required this.isar,
+    required this.onLoadDraft,
+  });
+
+  Future<List<SparePartDraft>> _getDrafts() async {
+    return await isar.sparePartDrafts.where().sortByUpdatedAtDesc().findAll();
+  }
+
+  Future<void> _deleteDraft(BuildContext context, int id) async {
+    await isar.writeTxn(() async {
+      await isar.sparePartDrafts.delete(id);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Draft Part List berhasil dihapus.')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<SparePartDraft>>(
+      future: _getDrafts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final drafts = snapshot.data ?? [];
+        if (drafts.isEmpty) {
+          return const Center(
+            child: Text('Belum ada draft Part List tersimpan.', style: TextStyle(color: Colors.grey)),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: drafts.length,
+          itemBuilder: (context, index) {
+            final draft = drafts[index];
+            final itemLength = draft.items?.length ?? 0;
+
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              elevation: 1,
+              child: ListTile(
+                title: Text(
+                  draft.customer?.isNotEmpty == true ? draft.customer! : 'Tanpa Nama Customer',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Machine: ${draft.machine ?? '-'}\nTotal Part: $itemLength item | Tanggal: ${draft.date ?? '-'}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_document, color: Color(0xFF0068C9)),
+                      tooltip: 'Buka / Edit Draft',
+                      onPressed: () => onLoadDraft(draft),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      tooltip: 'Hapus Draft',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Hapus Draft'),
+                            content: const Text('Apakah Anda yakin ingin menghapus draft ini?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Batal'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _deleteDraft(context, draft.id);
+                                },
+                                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
                           ),
                         );
                       },
                     ),
-            ),
-          ],
-        ),
-      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
