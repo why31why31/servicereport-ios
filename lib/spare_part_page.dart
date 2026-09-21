@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,9 +9,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'spare_part_draft.dart';
-import 'package:flutter/services.dart'; // Tambahkan baris ini
-import 'package:flutter/material.dart';
-// ... import lainnya tetap sama
 
 class SparePartItemModel {
   final TextEditingController partNameController = TextEditingController();
@@ -47,9 +45,10 @@ class SparePartRecommendationPage extends StatefulWidget {
 
 class _SparePartRecommendationPageState extends State<SparePartRecommendationPage> {
   final _customerController = TextEditingController();
+  final _meetWithController = TextEditingController();
   final _machineController = TextEditingController();
-  final _machineTypeController = TextEditingController(); // Controller Type Mesin
-  final _serialNoController = TextEditingController();    // Controller Serial No
+  final _machineTypeController = TextEditingController();
+  final _serialNoController = TextEditingController();
   final _technicianController = TextEditingController();
   final _dateController = TextEditingController();
   final _notesController = TextEditingController();
@@ -325,6 +324,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
   @override
   void dispose() {
     _customerController.dispose();
+    _meetWithController.dispose();
     _machineController.dispose();
     _machineTypeController.dispose();
     _serialNoController.dispose();
@@ -406,6 +406,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
     setState(() {
       _currentDraftId = null;
       _customerController.clear();
+      _meetWithController.clear();
       _machineController.clear();
       _machineTypeController.clear();
       _serialNoController.clear();
@@ -505,7 +506,6 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
       ),
     );
 
-    // Load Logo PDF
     pw.MemoryImage? pdfLogo;
     try {
       final bytecode = await rootBundle.load('assets/logo_finpac.png');
@@ -515,7 +515,6 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
       pdfLogo = null;
     }
 
-    // Load Image Parts
     List<pw.MemoryImage?> itemImages = [];
     for (var item in _partItems) {
       if (item.imageFile != null) {
@@ -560,7 +559,6 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
         },
         build: (pw.Context context) {
           return [
-            // Title Header Identik Main.dart
             pw.Container(
               width: double.infinity,
               decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFF2B82C9)),
@@ -570,57 +568,70 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
             ),
             
             pw.SizedBox(height: 8), 
-            
-            // Tabel Informasi Identik Main.dart
+
             pw.Table(
               columnWidths: {
-                0: const pw.FixedColumnWidth(65), 
+                0: const pw.FixedColumnWidth(70), 
                 1: const pw.FlexColumnWidth(1.2), 
                 2: const pw.FixedColumnWidth(10), 
-                3: const pw.FixedColumnWidth(60), 
+                3: const pw.FixedColumnWidth(80), 
                 4: const pw.FlexColumnWidth(1.0)  
               },
               border: null, 
               defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom, 
               children: [
                 pw.TableRow(children: [
-                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_technicianController.text, style: pw.TextStyle(fontSize: 9.5))),
+                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_technicianController.text, style: pw.TextStyle(fontSize: 9.5))),
                   pw.SizedBox(width: 10), 
-                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9.5))),
+                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9.5))),
                 ]),
                 pw.TableRow(children: [
                   pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8),
                 ]),
+                
                 pw.TableRow(children: [
-                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_customerController.text, style: pw.TextStyle(fontSize: 9.5))),
+                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_customerController.text, style: pw.TextStyle(fontSize: 9.5))),
                   pw.SizedBox(width: 10), 
-                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_machineController.text, style: pw.TextStyle(fontSize: 9.5))),
-                ]),
-                pw.TableRow(children: [
-                  pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8),
-                ]),
-                pw.TableRow(children: [
-                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_machineTypeController.text, style: pw.TextStyle(fontSize: 9.5))),
-                  pw.SizedBox(width: 10), 
-                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_serialNoController.text, style: pw.TextStyle(fontSize: 9.5))),
+                  pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("Requested by:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                  pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_meetWithController.text, style: pw.TextStyle(fontSize: 9.5))),
                 ]),
               ],
             ),
-            
+            pw.SizedBox(height: 8),
+
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Expanded(
+                  flex: 2,
+                  child: pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_machineController.text, style: pw.TextStyle(fontSize: 9.5))),
+                ),
+                pw.SizedBox(width: 10),
+
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Expanded(
+                  flex: 2,
+                  child: pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_machineTypeController.text, style: pw.TextStyle(fontSize: 9.5))),
+                ),
+                pw.SizedBox(width: 10),
+
+                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Expanded(
+                  flex: 2,
+                  child: pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4), child: pw.Text(_serialNoController.text, style: pw.TextStyle(fontSize: 9.5))),
+                ),
+              ],
+            ),            
             pw.SizedBox(height: 18),
 
-            // Pembatas List Sparepart
             pw.Text("RECOMMENDED SPARE PARTS", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.black)),
             pw.Container(margin: const pw.EdgeInsets.only(top: 2, bottom: 6), height: 0.8, color: PdfColors.black),
             pw.SizedBox(height: 6),
             
-            // Loop Item
             pw.Column(
               children: List.generate(_partItems.length, (index) {
                 final item = _partItems[index];
@@ -799,31 +810,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_currentDraftId != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.shade700),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_note, color: Colors.amber.shade900),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text('Editing Part List Draft #$_currentDraftId', style: TextStyle(color: Colors.amber.shade900, fontWeight: FontWeight.bold, fontSize: 12)),
-                    ),
-                    TextButton(
-                      onPressed: _resetForm,
-                      child: const Text('CANCEL EDIT', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
-                    )
-                  ],
-                ),
-              ),
-
-            // VISIT INFORMATION
+            // ==========================================
+            // KARTU 1: VISIT INFORMATION (IDENTIK SERVICE REPORT)
+            // ==========================================
             Card(
               color: Colors.white,
               elevation: 1,
@@ -836,121 +825,8 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                     const Text("📌 Visit Information", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
                     const Divider(color: Color(0xFFE0E0E0)),
                     
-                    // CUSTOMER DROPDOWN
-                    _buildLabel("Customer Name"),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true, 
-                      value: _selectedCustomer,
-                      decoration: const InputDecoration(
-                        hintText: "Select Customer",
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                      items: _customerList.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: const TextStyle(fontSize: 13)),
-                        );
-                      }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedCustomer = newValue;
-                          if (newValue == 'Other (Type manually)') {
-                            _isCustomCustomer = true;
-                            _customerController.clear();
-                          } else {
-                            _isCustomCustomer = false;
-                            _customerController.text = newValue ?? '';
-                          }
-                        });
-                      },
-                    ),
-                    if (_isCustomCustomer) ...[
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _customerController,
-                        decoration: const InputDecoration(
-                          hintText: "Enter customer name manually",
-                          prefixIcon: Icon(Icons.edit, size: 18),
-                        ),
-                      ),
-                    ],
-
-                    // MACHINE BRAND DROPDOWN
-                    _buildLabel("Machine Brand"),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _selectedMachine,
-                      decoration: const InputDecoration(
-                        hintText: "Select Machine Brand",
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                      items: _machineList.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value, style: const TextStyle(fontSize: 13)),
-                        );
-                      }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedMachine = newValue;
-                          if (newValue == 'Other (Type manually)') {
-                            _isCustomMachine = true;
-                            _machineController.clear();
-                          } else {
-                            _isCustomMachine = false;
-                            _machineController.text = newValue ?? '';
-                          }
-                        });
-                      },
-                    ),
-                    if (_isCustomMachine) ...[
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _machineController,
-                        decoration: const InputDecoration(
-                          hintText: "Enter machine brand manually",
-                          prefixIcon: Icon(Icons.edit, size: 18),
-                        ),
-                      ),
-                    ],
-
-                    // MACHINE TYPE & SERIAL NO (INPUT FIELDS)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel("Machine Type"),
-                              TextFormField(
-                                controller: _machineTypeController,
-                                decoration: const InputDecoration(
-                                  hintText: "e.g., S 250 Smart",
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel("Serial No"),
-                              TextFormField(
-                                controller: _serialNoController,
-                                decoration: const InputDecoration(
-                                  hintText: "e.g., SN-202604",
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // MULTI-SELECT TEKNISI
-                    _buildLabel("Technician Name"),
+                    // 1. Complete by *
+                    _buildLabel("Complete by *"),
                     TextFormField(
                       controller: _technicianController,
                       readOnly: true,
@@ -960,13 +836,103 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                         suffixIcon: Icon(Icons.arrow_drop_down, color: Color(0xFF0068C9)),
                       ),
                     ),
-                    
+
+                    // 2. Customer
+                    _buildLabel("Customer"),
+                    DropdownButtonFormField<String>(
+                      value: _customerList.contains(_selectedCustomer) ? _selectedCustomer : null,
+                      isExpanded: true,
+                      decoration: const InputDecoration(hintText: "Select Customer"),
+                      items: _customerList.map((cust) {
+                        return DropdownMenuItem<String>(
+                          value: cust,
+                          child: Text(cust, style: const TextStyle(fontSize: 13)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedCustomer = val;
+                          if (val == 'Other (Type manually)') {
+                            _isCustomCustomer = true;
+                            _customerController.clear();
+                          } else {
+                            _isCustomCustomer = false;
+                            _customerController.text = val ?? '';
+                          }
+                        });
+                      },
+                    ),
+                    if (_isCustomCustomer) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _customerController,
+                        decoration: const InputDecoration(hintText: "Type customer name manually"),
+                      ),
+                    ],
+
+                    // 3. Meet with
+                    _buildLabel("Meet with"),
+                    TextFormField(
+                      controller: _meetWithController,
+                      decoration: const InputDecoration(hintText: "Contact person name"),
+                    ),
+
+                    // 4. Date
                     _buildLabel("Date"),
                     TextFormField(
                       controller: _dateController,
                       readOnly: true,
                       onTap: () => _selectDate(context),
-                      decoration: const InputDecoration(suffixIcon: Icon(Icons.calendar_month, color: Color(0xFF0068C9))),
+                      decoration: const InputDecoration(
+                        suffixIcon: Icon(Icons.calendar_month, color: Color(0xFF0068C9)),
+                      ),
+                    ),
+
+                    // 5. Machine
+                    _buildLabel("Machine"),
+                    DropdownButtonFormField<String>(
+                      value: _machineList.contains(_selectedMachine) ? _selectedMachine : null,
+                      isExpanded: true,
+                      decoration: const InputDecoration(hintText: "Select Machine Brand"),
+                      items: _machineList.map((m) {
+                        return DropdownMenuItem<String>(
+                          value: m,
+                          child: Text(m, style: const TextStyle(fontSize: 13)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedMachine = val;
+                          if (val == 'Other (Type manually)') {
+                            _isCustomMachine = true;
+                            _machineController.clear();
+                          } else {
+                            _isCustomMachine = false;
+                            _machineController.text = val ?? '';
+                          }
+                        });
+                      },
+                    ),
+                    if (_isCustomMachine) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _machineController,
+                        decoration: const InputDecoration(hintText: "Type machine brand manually"),
+                      ),
+                    ],
+
+                    // 6. Machine Type
+                    _buildLabel("Machine Type"),
+                    TextFormField(
+                      controller: _machineTypeController,
+                      decoration: const InputDecoration(hintText: "e.g., S 250 S / Perfecta"),
+                    ),
+
+                    // 7. Serial No
+                    _buildLabel("Serial No"),
+                    TextFormField(
+                      controller: _serialNoController,
+                      decoration: const InputDecoration(hintText: "e.g., SN-2026-XXXX"),
                     ),
                   ],
                 ),
@@ -974,7 +940,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
             ),
             const SizedBox(height: 15),
 
-            // SPARE PART LIST
+            // ==========================================
+            // KARTU 2: SPARE PART LIST
+            // ==========================================
             Card(
               color: Colors.white,
               elevation: 1,
@@ -1122,7 +1090,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
             ),
             const SizedBox(height: 15),
 
-            // ADDITIONAL NOTES
+            // ==========================================
+            // KARTU 3: ADDITIONAL NOTES
+            // ==========================================
             Card(
               color: Colors.white,
               elevation: 1,
@@ -1146,7 +1116,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
             ),
             const SizedBox(height: 20),
 
+            // ==========================================
             // ACTION BUTTONS
+            // ==========================================
             Row(
               children: [
                 Expanded(
