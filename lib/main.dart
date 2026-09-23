@@ -237,7 +237,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   bool _isSyncing = false; 
   int? _activeDraftId; 
 
-  // Multi-select Teknisi
   List<String> _selectedTechnicians = [];
   final List<String> _techniciansList = [
     "Asep Wahyu",
@@ -247,7 +246,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     "Karim"
   ];
 
-  // Customer Dropdown
   String? _selectedCustomer;
   bool _isCustomCustomer = false;
 
@@ -986,7 +984,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // MULTI-SELECT TEKNISI
               _buildStreamlitLabel("Complete by *"),
               TextFormField(
                 controller: _cbController,
@@ -999,7 +996,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                 validator: (v) => v!.isEmpty ? 'This field is required' : null,
               ),
               
-              // DROPDOWN CUSTOMER
               _buildStreamlitLabel("Customer"),
               DropdownButtonFormField<String>(
                 isExpanded: true,
@@ -1375,62 +1371,17 @@ class HistoryAndDraftPage extends StatefulWidget {
 
 class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final TextEditingController _searchController = TextEditingController();
-  List<LocalReport> _allLocalReports = [];
-  List<LocalReport> _filteredReports = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadHistoryFromIsar();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadHistoryFromIsar() async {
-    final reports = await widget.isar.localReports.where().findAll();
-    final reversedReports = reports.reversed.toList();
-    setState(() {
-      _allLocalReports = reversedReports;
-      _filteredReports = reversedReports;
-    });
-  }
-
-  void _runSearchFilter(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        _filteredReports = _allLocalReports;
-      });
-      return;
-    }
-
-    final lowerCaseQuery = query.toLowerCase();
-    setState(() {
-      _filteredReports = _allLocalReports.where((report) {
-        final custName = (report.customerName ?? '').toLowerCase();
-        final machName = (report.machine ?? '').toLowerCase();
-        final techName = (report.completeBy ?? '').toLowerCase();
-        return custName.contains(lowerCaseQuery) || machName.contains(lowerCaseQuery) || techName.contains(lowerCaseQuery);
-      }).toList();
-    });
-  }
-
-  Future<void> _deleteReport(int id) async {
-    await widget.isar.writeTxn(() async {
-      await widget.isar.localReports.delete(id);
-    });
-    _loadHistoryFromIsar();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('🗑️ Report successfully deleted from storage.')),
-      );
-    }
   }
 
   @override
@@ -1454,80 +1405,9 @@ class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> with SingleTi
       body: TabBarView(
         controller: _tabController,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  onChanged: _runSearchFilter,
-                  decoration: InputDecoration(
-                    hintText: "Search by Customer, Machine or Tech...",
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF0068C9)),
-                    suffixIcon: _searchController.text.isNotEmpty 
-                      ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _runSearchFilter(''); }) 
-                      : null,
-                    fillColor: Colors.white,
-                    filled: true,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: _filteredReports.isEmpty
-                      ? const Center(child: Text("No local reports or drafts found.", style: TextStyle(color: Colors.grey)))
-                      : ListView.builder(
-                          itemCount: _filteredReports.length,
-                          itemBuilder: (context, index) {
-                            final report = _filteredReports[index];
-                            final bool isSynced = report.isSynced;
-
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Colors.grey[200]!)),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: isSynced ? const Color(0xFFE6F4EA) : const Color(0xFFFFF7ED),
-                                  child: Icon(
-                                    isSynced ? Icons.cloud_done : Icons.edit_note, 
-                                    color: isSynced ? const Color(0xFF137333) : const Color(0xFFC2410C)
-                                  ),
-                                ),
-                                title: Text(report.customerName?.isNotEmpty == true ? report.customerName! : 'Unknown Customer', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                subtitle: Text("Machine: ${report.machine ?? '-'} | Date: ${report.date ?? '-'}\nStatus: ${report.status ?? '-'}", style: const TextStyle(fontSize: 11)),
-                                trailing: Wrap(
-                                  spacing: 4,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.open_in_new, color: Color(0xFF0068C9), size: 20),
-                                      onPressed: () => widget.onLoadDraft(report), 
-                                      tooltip: 'Load Data to Form',
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (ctx) => AlertDialog(
-                                            title: const Text("Delete Report", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                                            content: const Text("Are you sure you want to permanently delete this report from device?", style: TextStyle(fontSize: 12)),
-                                            actions: [
-                                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("CANCEL")),
-                                              TextButton(onPressed: () { Navigator.pop(ctx); _deleteReport(report.id); }, child: const Text("DELETE", style: TextStyle(color: Colors.red))),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+          ServiceReportDraftListView(
+            isar: widget.isar,
+            onLoadDraft: widget.onLoadDraft,
           ),
           SparePartDraftListView(
             isar: widget.isar,
@@ -1537,6 +1417,110 @@ class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> with SingleTi
           ),
         ],
       ),
+    );
+  }
+}
+
+class ServiceReportDraftListView extends StatelessWidget {
+  final Isar isar;
+  final Function(LocalReport) onLoadDraft;
+
+  const ServiceReportDraftListView({
+    super.key,
+    required this.isar,
+    required this.onLoadDraft,
+  });
+
+  Future<List<LocalReport>> _getReports() async {
+    final reports = await isar.localReports.where().findAll();
+    return reports.reversed.toList();
+  }
+
+  Future<void> _deleteReport(BuildContext context, int id) async {
+    await isar.writeTxn(() async {
+      await isar.localReports.delete(id);
+    });
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Draft Service Report berhasil dihapus.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<LocalReport>>(
+      future: _getReports(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final reports = snapshot.data ?? [];
+        if (reports.isEmpty) {
+          return const Center(
+            child: Text('Belum ada draft Service Report tersimpan.', style: TextStyle(color: Colors.grey)),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: reports.length,
+          itemBuilder: (context, index) {
+            final report = reports[index];
+
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              elevation: 1,
+              child: ListTile(
+                title: Text(
+                  report.customerName?.isNotEmpty == true ? report.customerName! : 'Tanpa Nama Customer',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Machine: ${report.machine ?? '-'}\nTeknisi: ${report.completeBy ?? '-'} | Tanggal: ${report.date ?? '-'}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_document, color: Color(0xFF0068C9)),
+                      tooltip: 'Buka / Edit Draft',
+                      onPressed: () => onLoadDraft(report),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      tooltip: 'Hapus Draft',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Hapus Draft'),
+                            content: const Text('Apakah Anda yakin ingin menghapus draft ini?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Batal'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _deleteReport(context, report.id);
+                                },
+                                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -1559,9 +1543,11 @@ class SparePartDraftListView extends StatelessWidget {
     await isar.writeTxn(() async {
       await isar.sparePartDrafts.delete(id);
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Draft Part List berhasil dihapus.')),
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Draft Part List berhasil dihapus.')),
+      );
+    }
   }
 
   @override
