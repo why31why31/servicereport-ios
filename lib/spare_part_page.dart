@@ -57,7 +57,6 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
   final ImagePicker _picker = ImagePicker();
   int? _currentDraftId;
 
-  // Multi-select Teknisi
   List<String> _selectedTechnicians = [];
   final List<String> _techniciansList = [
     "Asep Wahyu",
@@ -67,7 +66,6 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
     "Karim"
   ];
 
-  // Dropdown Customer & Machine
   String? _selectedCustomer;
   bool _isCustomCustomer = false;
 
@@ -169,9 +167,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF2563EB),
+              primary: Color(0xFF0068C9),
               onPrimary: Colors.white,
-              onSurface: Color(0xFF1E293B),
+              onSurface: Color(0xFF31333F),
             ),
           ),
           child: child!,
@@ -203,6 +201,9 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
       _selectedTechnicians = draft.technician?.isNotEmpty == true ? draft.technician!.split('/') : [];
       _dateController.text = draft.date ?? _formatDate(DateTime.now());
       _notesController.text = draft.notes ?? '';
+      _meetWithController.text = draft.meetWith ?? '';
+      _machineTypeController.text = draft.machineType ?? '';
+      _serialNoController.text = draft.serialNo ?? '';
 
       if (draft.customer != null && draft.customer!.isNotEmpty) {
         if (_customerList.contains(draft.customer)) {
@@ -283,7 +284,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                     return CheckboxListTile(
                       title: Text(tech, style: const TextStyle(fontSize: 14)),
                       value: isChecked,
-                      activeColor: const Color(0xFF2563EB),
+                      activeColor: const Color(0xFF0068C9),
                       onChanged: (bool? checked) {
                         setDialogState(() {
                           if (checked == true) {
@@ -303,7 +304,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                   child: const Text("CANCEL"),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB)),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0068C9)),
                   onPressed: () {
                     setState(() {
                       _selectedTechnicians = tempSelected;
@@ -380,7 +381,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
           child: Wrap(
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt, color: Color(0xFF2563EB)),
+                leading: const Icon(Icons.camera_alt, color: Color(0xFF0068C9)),
                 title: const Text('Take Photo with Camera'),
                 onTap: () {
                   Navigator.pop(context);
@@ -388,7 +389,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFF2563EB)),
+                leading: const Icon(Icons.photo_library, color: Color(0xFF0068C9)),
                 title: const Text('Choose from Gallery'),
                 onTap: () {
                   Navigator.pop(context);
@@ -460,7 +461,10 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
       final draft = SparePartDraft()
         ..id = _currentDraftId ?? Isar.autoIncrement
         ..customer = _customerController.text.trim()
+        ..meetWith = _meetWithController.text.trim()
         ..machine = _machineController.text.trim()
+        ..machineType = _machineTypeController.text.trim()
+        ..serialNo = _serialNoController.text.trim()
         ..technician = _technicianController.text.trim()
         ..date = _dateController.text.trim()
         ..notes = _notesController.text.trim()
@@ -699,7 +703,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
       MaterialPageRoute(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: const Color(0xFF0068C9),
             title: const Text("Print Preview - Spare Part List", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
           ),
           body: PdfPreview(
@@ -787,67 +791,15 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6, top: 10),
-      child: Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF334155))),
-    );
-  }
-
-  // ===========================================================================
-  // HELPER METODE UNTUK UI MODERN
-  // ===========================================================================
-
-  InputDecoration _buildModernInput({required String hintText, Widget? suffixIcon}) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-      fillColor: const Color(0xFFF1F5F9),
-      filled: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      suffixIcon: suffixIcon,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5)),
-    );
-  }
-
-  Widget _buildModernSectionCard({required String title, required IconData icon, required List<Widget> children}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 4))],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: const Color(0xFF2563EB).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
-              ),
-              const SizedBox(width: 12),
-              Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          const SizedBox(height: 16),
-          ...children,
-        ],
-      ),
+      child: Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF31333F))),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
-        elevation: 0,
+        backgroundColor: const Color(0xFF0068C9),
         title: Text(_currentDraftId != null ? 'Edit Part List Draft (#$_currentDraftId)' : 'Spare Part Recommendation', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
@@ -862,287 +814,296 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ==========================================
-            // KARTU 1: VISIT INFORMATION
-            // ==========================================
-            _buildModernSectionCard(
-              title: "Visit Information",
-              icon: Icons.assignment_outlined,
-              children: [
-                // 1. Complete by *
-                _buildLabel("Complete by *"),
-                TextFormField(
-                  controller: _technicianController,
-                  readOnly: true,
-                  onTap: _showTechnicianMultiSelectDialog,
-                  decoration: _buildModernInput(
-                    hintText: "Select Technician(s)",
-                    suffixIcon: const Icon(Icons.arrow_drop_down, color: Color(0xFF2563EB)),
-                  ),
-                ),
-
-                // 2. Customer
-                _buildLabel("Customer"),
-                DropdownButtonFormField<String>(
-                  value: _customerList.contains(_selectedCustomer) ? _selectedCustomer : null,
-                  isExpanded: true,
-                  decoration: _buildModernInput(hintText: "Select Customer"),
-                  items: _customerList.map((cust) {
-                    return DropdownMenuItem<String>(
-                      value: cust,
-                      child: Text(cust, style: const TextStyle(fontSize: 13)),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedCustomer = val;
-                      if (val == 'Other (Type manually)') {
-                        _isCustomCustomer = true;
-                        _customerController.clear();
-                      } else {
-                        _isCustomCustomer = false;
-                        _customerController.text = val ?? '';
-                      }
-                    });
-                  },
-                ),
-                if (_isCustomCustomer) ...[
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _customerController,
-                    decoration: _buildModernInput(hintText: "Type customer name manually"),
-                  ),
-                ],
-
-                // 3. Meet with
-                _buildLabel("Meet with"),
-                TextFormField(
-                  controller: _meetWithController,
-                  decoration: _buildModernInput(hintText: "Contact person name"),
-                ),
-
-                // 4. Date
-                _buildLabel("Date"),
-                TextFormField(
-                  controller: _dateController,
-                  readOnly: true,
-                  onTap: () => _selectDate(context),
-                  decoration: _buildModernInput(
-                    hintText: "Select Date Range",
-                    suffixIcon: const Icon(Icons.calendar_month, color: Color(0xFF2563EB)),
-                  ),
-                ),
-
-                // 5. Machine
-                _buildLabel("Machine"),
-                DropdownButtonFormField<String>(
-                  value: _machineList.contains(_selectedMachine) ? _selectedMachine : null,
-                  isExpanded: true,
-                  decoration: _buildModernInput(hintText: "Select Machine Brand"),
-                  items: _machineList.map((m) {
-                    return DropdownMenuItem<String>(
-                      value: m,
-                      child: Text(m, style: const TextStyle(fontSize: 13)),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedMachine = val;
-                      if (val == 'Other (Type manually)') {
-                        _isCustomMachine = true;
-                        _machineController.clear();
-                      } else {
-                        _isCustomMachine = false;
-                        _machineController.text = val ?? '';
-                      }
-                    });
-                  },
-                ),
-                if (_isCustomMachine) ...[
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _machineController,
-                    decoration: _buildModernInput(hintText: "Type machine brand manually"),
-                  ),
-                ],
-
-                // 6. Machine Type
-                _buildLabel("Machine Type"),
-                TextFormField(
-                  controller: _machineTypeController,
-                  decoration: _buildModernInput(hintText: "e.g., S 250 S / Perfecta"),
-                ),
-
-                // 7. Serial No
-                _buildLabel("Serial No"),
-                TextFormField(
-                  controller: _serialNoController,
-                  decoration: _buildModernInput(hintText: "e.g., SN-2026-XXXX"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // ==========================================
-            // KARTU 2: SPARE PART LIST
-            // ==========================================
-            _buildModernSectionCard(
-              title: "Spare Part List (${_partItems.length} Items)",
-              icon: Icons.build_outlined,
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _partItems.length,
-                  itemBuilder: (context, index) {
-                    final item = _partItems[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+            Card(
+              color: Colors.white,
+              elevation: 1,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("📌 Visit Information", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                    const Divider(color: Color(0xFFE0E0E0)),
+                    
+                    _buildLabel("Complete by *"),
+                    TextFormField(
+                      controller: _technicianController,
+                      readOnly: true,
+                      onTap: _showTechnicianMultiSelectDialog,
+                      decoration: const InputDecoration(
+                        hintText: "Select Technician(s)",
+                        suffixIcon: Icon(Icons.arrow_drop_down, color: Color(0xFF0068C9)),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Item #${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A))),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                                onPressed: () => _removePartItem(index),
-                              ),
-                            ],
+                    ),
+
+                    _buildLabel("Customer"),
+                    DropdownButtonFormField<String>(
+                      value: _customerList.contains(_selectedCustomer) ? _selectedCustomer : null,
+                      isExpanded: true,
+                      decoration: const InputDecoration(hintText: "Select Customer"),
+                      items: _customerList.map((cust) {
+                        return DropdownMenuItem<String>(
+                          value: cust,
+                          child: Text(cust, style: const TextStyle(fontSize: 13)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedCustomer = val;
+                          if (val == 'Other (Type manually)') {
+                            _isCustomCustomer = true;
+                            _customerController.clear();
+                          } else {
+                            _isCustomCustomer = false;
+                            _customerController.text = val ?? '';
+                          }
+                        });
+                      },
+                    ),
+                    if (_isCustomCustomer) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _customerController,
+                        decoration: const InputDecoration(hintText: "Type customer name manually"),
+                      ),
+                    ],
+
+                    _buildLabel("Meet with"),
+                    TextFormField(
+                      controller: _meetWithController,
+                      decoration: const InputDecoration(hintText: "Contact person name"),
+                    ),
+
+                    _buildLabel("Date"),
+                    TextFormField(
+                      controller: _dateController,
+                      readOnly: true,
+                      onTap: () => _selectDate(context),
+                      decoration: const InputDecoration(
+                        suffixIcon: Icon(Icons.calendar_month, color: Color(0xFF0068C9)),
+                      ),
+                    ),
+
+                    _buildLabel("Machine"),
+                    DropdownButtonFormField<String>(
+                      value: _machineList.contains(_selectedMachine) ? _selectedMachine : null,
+                      isExpanded: true,
+                      decoration: const InputDecoration(hintText: "Select Machine Brand"),
+                      items: _machineList.map((m) {
+                        return DropdownMenuItem<String>(
+                          value: m,
+                          child: Text(m, style: const TextStyle(fontSize: 13)),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedMachine = val;
+                          if (val == 'Other (Type manually)') {
+                            _isCustomMachine = true;
+                            _machineController.clear();
+                          } else {
+                            _isCustomMachine = false;
+                            _machineController.text = val ?? '';
+                          }
+                        });
+                      },
+                    ),
+                    if (_isCustomMachine) ...[
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _machineController,
+                        decoration: const InputDecoration(hintText: "Type machine brand manually"),
+                      ),
+                    ],
+
+                    _buildLabel("Machine Type"),
+                    TextFormField(
+                      controller: _machineTypeController,
+                      decoration: const InputDecoration(hintText: "e.g., S 250 S / Perfecta"),
+                    ),
+
+                    _buildLabel("Serial No"),
+                    TextFormField(
+                      controller: _serialNoController,
+                      decoration: const InputDecoration(hintText: "e.g., SN-2026-XXXX"),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            Card(
+              color: Colors.white,
+              elevation: 1,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("⚙️ Spare Part List", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                        Text("Total: ${_partItems.length} Items", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                    const Divider(color: Color(0xFFE0E0E0)),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _partItems.length,
+                      itemBuilder: (context, index) {
+                        final item = _partItems[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          _buildLabel("Part Name / Description *"),
-                          TextFormField(controller: item.partNameController, decoration: _buildModernInput(hintText: "Component / Spare part name")),
-                          Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel("Part No / Article"), TextFormField(controller: item.partNumberController, decoration: _buildModernInput(hintText: "Part code"))])),
-                              const SizedBox(width: 10),
-                              Expanded(flex: 1, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel("Qty"), TextFormField(controller: item.qtyController, keyboardType: TextInputType.number, decoration: _buildModernInput(hintText: "1"))])),
-                            ],
-                          ),
-                          _buildLabel("Remarks / Reason for Replacement"),
-                          TextFormField(controller: item.remarkController, decoration: _buildModernInput(hintText: "e.g., Worn out, Cracked, Spare needed")),
-                          _buildLabel("Part Photo"),
-                          item.imageFile == null
-                              ? OutlinedButton.icon(
-                                  onPressed: () => _showImagePickerOptions(index),
-                                  style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(44),
-                                    side: const BorderSide(color: Color(0xFFCBD5E1)),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("Item #${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                    onPressed: () => _removePartItem(index),
                                   ),
-                                  icon: const Icon(Icons.add_a_photo_outlined, size: 18, color: Color(0xFF2563EB)),
-                                  label: const Text("Add Part Photo", style: TextStyle(color: Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.w600)),
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.file(
-                                        File(item.imageFile!.path),
-                                        height: 140,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
+                                ],
+                              ),
+                              _buildLabel("Part Name / Description *"),
+                              TextFormField(controller: item.partNameController, decoration: const InputDecoration(hintText: "Component / Spare part name")),
+                              Row(
+                                children: [
+                                  Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel("Part No / Article"), TextFormField(controller: item.partNumberController, decoration: const InputDecoration(hintText: "Part code"))])),
+                                  const SizedBox(width: 10),
+                                  Expanded(flex: 1, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_buildLabel("Qty"), TextFormField(controller: item.qtyController, keyboardType: TextInputType.number)])),
+                                ],
+                              ),
+                              _buildLabel("Remarks / Reason for Replacement"),
+                              TextFormField(controller: item.remarkController, decoration: const InputDecoration(hintText: "e.g., Worn out, Cracked, Spare needed")),
+                              _buildLabel("Part Photo"),
+                              item.imageFile == null
+                                  ? OutlinedButton.icon(
+                                      onPressed: () => _showImagePickerOptions(index),
+                                      style: OutlinedButton.styleFrom(
+                                        minimumSize: const Size.fromHeight(40),
+                                        side: const BorderSide(color: Colors.grey),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.photo_size_select_large, size: 16, color: Color(0xFF64748B)),
-                                        const SizedBox(width: 6),
-                                        Text("PDF Size: ${item.imageSize.toInt()}px", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
-                                        Expanded(
-                                          child: SliderTheme(
-                                            data: SliderTheme.of(context).copyWith(
-                                              trackHeight: 2.0,
-                                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-                                            ),
-                                            child: Slider(
-                                              value: item.imageSize,
-                                              min: 50.0,
-                                              max: 200.0,
-                                              activeColor: const Color(0xFF2563EB),
-                                              inactiveColor: const Color(0xFFCBD5E1),
-                                              onChanged: (newValue) {
-                                                setState(() {
-                                                  item.imageSize = newValue;
-                                                });
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextButton.icon(
-                                            onPressed: () => _showImagePickerOptions(index),
-                                            icon: const Icon(Icons.refresh, size: 16),
-                                            label: const Text("Change Photo", style: TextStyle(fontSize: 12)),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: TextButton.icon(
-                                            onPressed: () => setState(() => item.imageFile = null),
-                                            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-                                            icon: const Icon(Icons.delete, size: 16),
-                                            label: const Text("Remove Photo", style: TextStyle(fontSize: 12)),
-                                          ),
-                                        ),
-                                      ],
+                                      icon: const Icon(Icons.add_a_photo_outlined, size: 18, color: Color(0xFF0068C9)),
+                                      label: const Text("Add Part Photo", style: TextStyle(color: Color(0xFF0068C9), fontSize: 12)),
                                     )
-                                  ],
-                                ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: _addNewPartItem,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    side: const BorderSide(color: Color(0xFF2563EB)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.add_circle_outline, color: Color(0xFF2563EB)),
-                  label: const Text('➕ ADD PART ITEM', style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+                                  : Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.file(
+                                            File(item.imageFile!.path),
+                                            height: 140,
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.photo_size_select_large, size: 16, color: Colors.grey),
+                                            const SizedBox(width: 6),
+                                            Text("PDF Size: ${item.imageSize.toInt()}px", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                                            Expanded(
+                                              child: SliderTheme(
+                                                data: SliderTheme.of(context).copyWith(
+                                                  trackHeight: 2.0,
+                                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+                                                ),
+                                                child: Slider(
+                                                  value: item.imageSize,
+                                                  min: 50.0,
+                                                  max: 200.0,
+                                                  activeColor: const Color(0xFF0068C9),
+                                                  inactiveColor: const Color(0xFFCBD5E1),
+                                                  onChanged: (newValue) {
+                                                    setState(() {
+                                                      item.imageSize = newValue;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
 
-            // ==========================================
-            // KARTU 3: ADDITIONAL NOTES
-            // ==========================================
-            _buildModernSectionCard(
-              title: "Additional Notes",
-              icon: Icons.note_alt_outlined,
-              children: [
-                _buildLabel("General Remarks"),
-                TextFormField(
-                  controller: _notesController,
-                  maxLines: 3,
-                  decoration: _buildModernInput(hintText: "Add specific instructions for purchasing/sales team..."),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: TextButton.icon(
+                                                onPressed: () => _showImagePickerOptions(index),
+                                                icon: const Icon(Icons.refresh, size: 16),
+                                                label: const Text("Change Photo", style: TextStyle(fontSize: 12)),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: TextButton.icon(
+                                                onPressed: () => setState(() => item.imageFile = null),
+                                                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                                icon: const Icon(Icons.delete, size: 16),
+                                                label: const Text("Remove Photo", style: TextStyle(fontSize: 12)),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _addNewPartItem,
+                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(45)),
+                      icon: const Icon(Icons.add_circle_outline, color: Color(0xFF0068C9)),
+                      label: const Text('➕ ADD PART ITEM', style: TextStyle(color: Color(0xFF0068C9), fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            Card(
+              color: Colors.white,
+              elevation: 1,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("📝 Additional Notes", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                    const Divider(color: Color(0xFFE0E0E0)),
+                    _buildLabel("General Remarks"),
+                    TextFormField(
+                      controller: _notesController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(hintText: "Add specific instructions for purchasing/sales team..."),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
 
-            // ==========================================
-            // ACTION BUTTONS
-            // ==========================================
             Row(
               children: [
                 Expanded(
@@ -1150,11 +1111,10 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                     onPressed: _saveDraft,
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
-                      side: const BorderSide(color: Color(0xFF2563EB)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: const BorderSide(color: Color(0xFF0068C9)),
                     ),
-                    icon: const Icon(Icons.save_outlined, color: Color(0xFF2563EB)),
-                    label: Text(_currentDraftId != null ? 'UPDATE DRAFT' : 'SAVE DRAFT', style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold, fontSize: 11)),
+                    icon: const Icon(Icons.save_outlined, color: Color(0xFF0068C9)),
+                    label: Text(_currentDraftId != null ? 'UPDATE DRAFT' : 'SAVE DRAFT', style: const TextStyle(color: Color(0xFF0068C9), fontWeight: FontWeight.bold, fontSize: 11)),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -1163,11 +1123,10 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                     onPressed: _openPrintPreviewPage,
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
-                      side: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: const BorderSide(color: Color(0xFF0068C9), width: 1.5),
                     ),
-                    icon: const Icon(Icons.picture_in_picture, color: Color(0xFF2563EB)),
-                    label: const Text('PRINT PREVIEW', style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold, fontSize: 11)),
+                    icon: const Icon(Icons.picture_in_picture, color: Color(0xFF0068C9)),
+                    label: const Text('PRINT PREVIEW', style: TextStyle(color: Color(0xFF0068C9), fontWeight: FontWeight.bold, fontSize: 11)),
                   ),
                 ),
               ],
@@ -1177,9 +1136,8 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
             ElevatedButton.icon(
               onPressed: _generateAndSharePdf,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: const Color(0xFF0068C9),
                 minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
               label: const Text('🚀 GENERATE & SHARE PDF', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
@@ -1191,7 +1149,6 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0F172A),
                 minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.share, color: Colors.white),
               label: const Text('📲 SHARE TEXT SUMMARY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),

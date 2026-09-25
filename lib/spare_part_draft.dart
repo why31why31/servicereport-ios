@@ -12,10 +12,20 @@ class SparePartDraft {
   String? date;
   String? notes;
 
+  // Field tambahan untuk form
+  String? meetWith;
+  String? machineType;
+  String? serialNo;
+
   List<SparePartDraftItem>? items;
 
   DateTime createdAt = DateTime.now();
   DateTime updatedAt = DateTime.now();
+
+  String? get customerName => customer;
+
+  List<String>? get partNames =>
+      items?.map((item) => item.partName ?? '').toList();
 }
 
 @embedded
@@ -24,5 +34,5 @@ class SparePartDraftItem {
   String? partNumber;
   String? qty;
   String? remark;
-  String? imagePath; // Lokasi penyimpanan foto lokal
+  String? imagePath;
 }

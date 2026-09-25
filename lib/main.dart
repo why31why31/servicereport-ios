@@ -1,29 +1,32 @@
-import 'package:flutter/material.dart'; 
-import 'package:flutter/services.dart'; 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:signature/signature.dart'; 
-import 'package:share_plus/share_plus.dart'; 
-import 'package:image_picker/image_picker.dart'; 
-import 'service_report.dart';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart'; 
-import 'dart:io';
-import 'dart:convert'; 
-import 'package:http/http.dart' as http; 
-import 'spare_part_page.dart';
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:signature/signature.dart';
+
+import 'service_report.dart';
 import 'spare_part_draft.dart';
+import 'spare_part_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final dir = await getApplicationDocumentsDirectory();
-  
+
   final isar = await Isar.open(
     [
-      LocalReportSchema, 
+      LocalReportSchema,
       SparePartDraftSchema,
     ],
     directory: dir.path,
@@ -41,26 +44,40 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Finpac Service Portal',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('id', 'ID'),
+      ],
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-        primaryColor: const Color(0xFF0068C9), 
+        primaryColor: const Color(0xFF0068C9),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0068C9), 
-          background: const Color(0xFFF8F9FA),
+          seedColor: const Color(0xFF0068C9),
+          surface: const Color(0xFFF8F9FA),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFF0068C9), width: 1.5),
           ),
         ),
       ),
-      home: MainNavigationContainer(isar: isar), 
+      home: MainNavigationContainer(isar: isar),
     );
   }
 }
@@ -70,12 +87,13 @@ class MainNavigationContainer extends StatefulWidget {
   const MainNavigationContainer({super.key, required this.isar});
 
   @override
-  State<MainNavigationContainer> createState() => _MainNavigationContainerState();
+  State<MainNavigationContainer> createState() =>
+      _MainNavigationContainerState();
 }
 
 class _MainNavigationContainerState extends State<MainNavigationContainer> {
   int _currentIndex = 0;
-  LocalReport? _selectedReportToEdit; 
+  LocalReport? _selectedReportToEdit;
   SparePartDraft? _selectedPartDraftToEdit;
   late List<Widget> _pages;
 
@@ -88,7 +106,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
   void _refreshPages() {
     _pages = [
       FormReportOfflinePage(
-        isar: widget.isar, 
+        isar: widget.isar,
         loadReportData: _selectedReportToEdit,
         onClearLoad: () {
           setState(() {
@@ -101,15 +119,15 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
         isar: widget.isar,
         onLoadDraft: (report) {
           setState(() {
-            _selectedReportToEdit = report; 
-            _currentIndex = 0; 
+            _selectedReportToEdit = report;
+            _currentIndex = 0;
             _refreshPages();
           });
         },
         onLoadPartDraft: (partDraft) {
           setState(() {
             _selectedPartDraftToEdit = partDraft;
-            _currentIndex = 2; 
+            _currentIndex = 2;
             _refreshPages();
           });
         },
@@ -146,9 +164,12 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.edit_document), label: 'Form Entry'),
-          BottomNavigationBarItem(icon: Icon(Icons.history_toggle_off), label: 'History & Drafts'),
-          BottomNavigationBarItem(icon: Icon(Icons.build_circle_outlined), label: 'Part List'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.edit_document), label: 'Form Entry'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.history_toggle_off), label: 'History & Drafts'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.build_circle_outlined), label: 'Part List'),
         ],
       ),
     );
@@ -156,7 +177,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
 }
 
 class ActionBlockModel {
-  List<File> imageFiles = []; 
+  List<File> imageFiles = [];
   double imageSize = 130.0;
   final TextEditingController textController = TextEditingController();
 
@@ -177,12 +198,16 @@ class ActionBlockModel {
     final block = ActionBlockModel();
     final map = jsonDecode(jsonStr);
     block.textController.text = map['text'] ?? '';
-    
+
     var savedSize = map['size'];
     if (savedSize is String) {
-      if (savedSize == 'Small') block.imageSize = 80.0;
-      else if (savedSize == 'Large') block.imageSize = 220.0;
-      else block.imageSize = 130.0;
+      if (savedSize == 'Small') {
+        block.imageSize = 80.0;
+      } else if (savedSize == 'Large') {
+        block.imageSize = 220.0;
+      } else {
+        block.imageSize = 130.0;
+      }
     } else if (savedSize is num) {
       block.imageSize = savedSize.toDouble();
     } else {
@@ -194,7 +219,8 @@ class ActionBlockModel {
       List<dynamic> base64Images = map['images'];
       for (int i = 0; i < base64Images.length; i++) {
         final bytes = base64Decode(base64Images[i]);
-        final tempFile = File('${tempDir.path}/draft_img_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+        final tempFile = File(
+            '${tempDir.path}/draft_img_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
         await tempFile.writeAsBytes(bytes);
         block.imageFiles.add(tempFile);
       }
@@ -205,14 +231,14 @@ class ActionBlockModel {
 
 class FormReportOfflinePage extends StatefulWidget {
   final Isar isar;
-  final LocalReport? loadReportData; 
+  final LocalReport? loadReportData;
   final VoidCallback onClearLoad;
 
   const FormReportOfflinePage({
-    super.key, 
-    required this.isar, 
-    this.loadReportData, 
-    required this.onClearLoad
+    super.key,
+    required this.isar,
+    this.loadReportData,
+    required this.onClearLoad,
   });
 
   @override
@@ -221,21 +247,24 @@ class FormReportOfflinePage extends StatefulWidget {
 
 class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   final _formKey = GlobalKey<FormState>();
-  
+  bool _showToolbar = true;
+
   final _cbController = TextEditingController();
   final _cuController = TextEditingController();
   final _mwController = TextEditingController();
   final _tyController = TextEditingController();
   final _snController = TextEditingController();
   final _prController = TextEditingController();
-  final _fuLegacyController = TextEditingController(); 
+
+  QuillController _quillController = QuillController.basic();
+
   final _dateController = TextEditingController();
-  final _gDriveController = TextEditingController(); 
-  
+  final _gDriveController = TextEditingController();
+
   String _selectedMachine = 'Siebler';
   String _selectedStatus = 'Done';
-  bool _isSyncing = false; 
-  int? _activeDraftId; 
+  bool _isSyncing = false;
+  int? _activeDraftId;
 
   List<String> _selectedTechnicians = [];
   final List<String> _techniciansList = [
@@ -297,16 +326,31 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     "Other (Type manually)"
   ];
 
-  final String _googleSheetsUrl = "https://script.google.com/macros/s/AKfycbxfsxh32nXy93tMGqXzdWN7g4p3zDnPYZFrlqGGR9tsSYAzEwI92cE041Cm17kBdMKohw/exec";
+  final String _googleSheetsUrl =
+      "https://script.google.com/macros/s/AKfycbxfsxh32nXy93tMGqXzdWN7g4p3zDnPYZFrlqGGR9tsSYAzEwI92cE041Cm17kBdMKohw/exec";
 
-  final List<String> _machines = ["Siebler", "Noack", "Kilian", "Romaco", "Macofar", "Promatic", "MG2", "Truking", "FrymaKoruma", "Stephan", "Other Machine"];
+  final List<String> _machines = [
+    "Siebler",
+    "Noack",
+    "Kilian",
+    "Romaco",
+    "Macofar",
+    "Promatic",
+    "MG2",
+    "Truking",
+    "FrymaKoruma",
+    "Stephan",
+    "Other Machine"
+  ];
   final List<String> _statuses = ["Continue", "Pending", "Done"];
 
   final List<ActionBlockModel> _actionBlocks = [];
   final ImagePicker _picker = ImagePicker();
 
-  final SignatureController _technicianSigController = SignatureController(penStrokeWidth: 2.5, penColor: const Color(0xFF0F172A));
-  final SignatureController _customerSigController = SignatureController(penStrokeWidth: 2.5, penColor: const Color(0xFF0F172A));
+  final SignatureController _technicianSigController = SignatureController(
+      penStrokeWidth: 2.5, penColor: const Color(0xFF0F172A));
+  final SignatureController _customerSigController = SignatureController(
+      penStrokeWidth: 2.5, penColor: const Color(0xFF0F172A));
 
   @override
   void initState() {
@@ -314,24 +358,312 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     _checkAndLoadIncomingDraft();
   }
 
+  @override
+  void dispose() {
+    _quillController.dispose();
+    _cbController.dispose();
+    _cuController.dispose();
+    _mwController.dispose();
+    _tyController.dispose();
+    _snController.dispose();
+    _prController.dispose();
+    _dateController.dispose();
+    _gDriveController.dispose();
+
+    // FIXED: Mencegah Memory Leak dengan memanggil dispose pada SignatureController
+    _technicianSigController.dispose();
+    _customerSigController.dispose();
+
+    // FIXED: Mencegah Memory Leak untuk semua text controller dinamis
+    for (var block in _actionBlocks) {
+      block.textController.dispose();
+    }
+
+    super.dispose();
+  }
+
+  String get _fuPlainText => _quillController.document.toPlainText().trim();
+
+  // ====== FUNGSI UNTUK INSERT GAMBAR / DRAWING ======
+  void _insertImageToQuill(String imagePath) {
+    int index = _quillController.selection.baseOffset;
+    if (index < 0) {
+      index = _quillController.document.length - 1;
+      if (index < 0) index = 0;
+    }
+
+    final String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+    final String embedData = jsonEncode({
+      'path': imagePath,
+      'height': 150.0,
+      'id': uniqueId,
+    });
+
+    _quillController.document.insert(index, '\n');
+    _quillController.document.insert(index + 1, BlockEmbed('sized_image', embedData));
+    _quillController.document.insert(index + 2, '\n');
+
+    _quillController.updateSelection(
+        TextSelection.collapsed(offset: index + 3), ChangeSource.local);
+  }
+
+  Future<void> _showInsertMediaMenu(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.draw, color: Color(0xFF0068C9)),
+              title: const Text('Buat Sketsa / Drawing'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final String? imagePath = await showDialog<String>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const DrawingDialog(),
+                );
+                if (imagePath != null) _insertImageToQuill(imagePath);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Ambil dari Kamera'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final XFile? photo = await _picker.pickImage(
+                    source: ImageSource.camera, imageQuality: 50);
+                if (photo != null) _insertImageToQuill(photo.path);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Pilih dari Galeri'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final XFile? photo = await _picker.pickImage(
+                    source: ImageSource.gallery, imageQuality: 50);
+                if (photo != null) _insertImageToQuill(photo.path);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  // ========================================================
+
+  // ====== FUNGSI UNTUK PARSING GAMBAR QUILL KE PDF ======
+  // ====== FUNGSI UNTUK PARSING GAMBAR QUILL & FORMAT TEKS KE PDF ======
+  List<pw.Widget> _buildFollowUpPdfWidgets() {
+    List<pw.Widget> widgets = [];
+    final delta = _quillController.document.toDelta();
+
+    List<pw.TextSpan> currentTextSpans = [];
+    int orderedListCounter = 1;
+
+    // Fungsi helper untuk menerjemahkan format teks Quill ke PDF
+    pw.TextStyle getStyle(Map<String, dynamic>? attrs) {
+      return pw.TextStyle(
+        fontSize: 9.5,
+        lineSpacing: 1.3,
+        fontWeight: attrs != null && attrs['bold'] == true
+            ? pw.FontWeight.bold
+            : pw.FontWeight.normal,
+        fontStyle: attrs != null && attrs['italic'] == true
+            ? pw.FontStyle.italic
+            : pw.FontStyle.normal,
+        decoration: attrs != null && attrs['underline'] == true
+            ? pw.TextDecoration.underline
+            : pw.TextDecoration.none,
+      );
+    }
+
+    for (var op in delta.toList()) {
+      if (!op.isInsert) continue;
+
+      if (op.data is String) {
+        String text = op.data as String;
+        Map<String, dynamic>? attrs = op.attributes;
+
+        // Quill menyimpan format block (seperti list/bullet) berbarengan pada karakter newline '\n'
+        List<String> lines = text.split('\n');
+
+        for (int i = 0; i < lines.length; i++) {
+          if (lines[i].isNotEmpty) {
+            currentTextSpans.add(
+                pw.TextSpan(text: lines[i], style: getStyle(attrs)));
+          }
+
+          // Jika bukan elemen terakhir, berarti ada karakter '\n' di sini (tanda berakhirnya satu baris/blok)
+          if (i < lines.length - 1) {
+            if (attrs != null && attrs['list'] == 'bullet') {
+              // Eksekusi jika baris ini adalah Bullet List
+              widgets.add(
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 3),
+                  child: pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Container(
+                        width: 12,
+                        child: pw.Text("•", style: pw.TextStyle(fontSize: 9.5)),
+                      ),
+                      pw.Expanded(
+                        child: pw.RichText(
+                            text: pw.TextSpan(
+                                children: List.from(currentTextSpans))),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            } else if (attrs != null && attrs['list'] == 'ordered') {
+              // Eksekusi jika baris ini adalah Numbering List
+              widgets.add(
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 3),
+                  child: pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Container(
+                        width: 15,
+                        child: pw.Text("$orderedListCounter.",
+                            style: pw.TextStyle(fontSize: 9.5)),
+                      ),
+                      pw.Expanded(
+                        child: pw.RichText(
+                            text: pw.TextSpan(
+                                children: List.from(currentTextSpans))),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+              orderedListCounter++;
+            } else {
+              // Eksekusi jika baris ini adalah Paragraf Biasa
+              if (currentTextSpans.isNotEmpty) {
+                widgets.add(
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 3),
+                    child: pw.RichText(
+                        text: pw.TextSpan(
+                            children: List.from(currentTextSpans))),
+                  ),
+                );
+              } else {
+                // Jarak kosong antar baris (Enter)
+                widgets.add(pw.SizedBox(height: 8));
+              }
+              // Reset counter numbering jika list angka terputus
+              orderedListCounter = 1;
+            }
+            currentTextSpans.clear(); // Bersihkan tampungan teks untuk baris berikutnya
+          }
+        }
+      } else if (op.data is Map<String, dynamic>) {
+        // --- Eksekusi Gambar yang Disisipkan ke Editor ---
+        // Jika masih ada teks yang menggantung sebelum gambar, print teksnya terlebih dahulu
+        if (currentTextSpans.isNotEmpty) {
+          widgets.add(
+            pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 3),
+              child: pw.RichText(
+                  text: pw.TextSpan(children: List.from(currentTextSpans))),
+            ),
+          );
+          currentTextSpans.clear();
+        }
+
+        final map = op.data as Map<String, dynamic>;
+        bool isImage = false;
+        String? imagePath;
+        double imageHeight = 140.0;
+
+        if (map.containsKey('image')) {
+          isImage = true;
+          imagePath = map['image'].toString();
+        } else if (map.containsKey('sized_image')) {
+          try {
+            final imgMap = jsonDecode(map['sized_image'].toString());
+            isImage = true;
+            imagePath = imgMap['path'];
+            imageHeight = (imgMap['height'] as num).toDouble();
+          } catch (_) {}
+        }
+
+        if (isImage && imagePath != null) {
+          if (File(imagePath).existsSync()) {
+            final imageBytes = File(imagePath).readAsBytesSync();
+            widgets.add(
+              pw.Container(
+                margin: const pw.EdgeInsets.symmetric(vertical: 6),
+                height: imageHeight,
+                alignment: pw.Alignment.centerLeft,
+                child: pw.Image(pw.MemoryImage(imageBytes),
+                    fit: pw.BoxFit.contain),
+              ),
+            );
+          }
+        }
+      }
+    }
+
+    // Print sisa teks di paling akhir dokumen jika ada
+    if (currentTextSpans.isNotEmpty) {
+      widgets.add(
+        pw.RichText(
+            text: pw.TextSpan(children: List.from(currentTextSpans))),
+      );
+    }
+
+    return widgets;
+  }   
+  // ========================================================
+
   Future<void> _checkAndLoadIncomingDraft() async {
     if (widget.loadReportData != null) {
       final data = widget.loadReportData!;
-      
+
       setState(() {
         _activeDraftId = data.id;
         _cbController.text = data.completeBy ?? '';
-        _selectedTechnicians = data.completeBy?.isNotEmpty == true ? data.completeBy!.split('/') : [];
+        _selectedTechnicians = data.completeBy?.isNotEmpty == true
+            ? data.completeBy!.split('/')
+            : [];
         _cuController.text = data.customerName ?? '';
         _mwController.text = data.meetWith ?? '';
         _dateController.text = data.date ?? _formatDate(DateTime.now());
         _tyController.text = data.machineType ?? '';
         _snController.text = data.serialNo ?? '';
         _prController.text = data.problemDescription ?? '';
-        _fuLegacyController.text = data.actionTaken?.split('\n=== CHRONOLOGICAL')[0] ?? ''; 
-        
-        if (_machines.contains(data.machine)) _selectedMachine = data.machine!;
-        if (_statuses.contains(data.status)) _selectedStatus = data.status!;
+
+        final actionText =
+            data.actionTaken?.split('\n=== CHRONOLOGICAL')[0] ?? '';
+        if (actionText.isNotEmpty) {
+          try {
+            final json = jsonDecode(actionText);
+            _quillController = QuillController(
+              document: Document.fromJson(json),
+              selection: const TextSelection.collapsed(offset: 0),
+            );
+          } catch (_) {
+            _quillController = QuillController(
+              document: Document()..insert(0, actionText),
+              selection: const TextSelection.collapsed(offset: 0),
+            );
+          }
+        } else {
+          _quillController = QuillController.basic();
+        }
+
+        if (data.machine != null && _machines.contains(data.machine)) {
+          _selectedMachine = data.machine!;
+        }
+        if (data.status != null && _statuses.contains(data.status)) {
+          _selectedStatus = data.status!;
+        }
 
         if (data.customerName != null && data.customerName!.isNotEmpty) {
           if (_customerList.contains(data.customerName)) {
@@ -347,22 +679,41 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         }
       });
 
-      if (data.savedActionBlocks != null && data.savedActionBlocks!.isNotEmpty) {
+      if (data.savedActionBlocks != null &&
+          data.savedActionBlocks!.isNotEmpty) {
+        
+        // FIXED: Hapus instance lama secara aman sebelum membuat data draft yang baru
+        for (var block in _actionBlocks) {
+          block.textController.dispose();
+        }
         _actionBlocks.clear();
+
         for (var jsonStr in data.savedActionBlocks!) {
           final block = await ActionBlockModel.fromJsonString(jsonStr);
           _actionBlocks.add(block);
         }
-        setState(() {}); 
+        
+        // Cek context mounted karena loop await bisa memakan waktu
+        if (mounted) {
+          setState(() {});
+        }
       }
-
     } else {
-      _dateController.text = _formatDate(DateTime.now());
-      _activeDraftId = null;
-      _selectedCustomer = null;
-      _isCustomCustomer = false;
-      _selectedTechnicians.clear();
-      _cbController.clear();
+      // Hapus data secara dinamis apabila widget diperbarui dengan nilai null (reset form)
+      for (var block in _actionBlocks) {
+        block.textController.dispose();
+      }
+      _actionBlocks.clear();
+      
+      setState(() {
+        _dateController.text = _formatDate(DateTime.now());
+        _activeDraftId = null;
+        _selectedCustomer = null;
+        _isCustomCustomer = false;
+        _selectedTechnicians.clear();
+        _cbController.clear();
+        _quillController = QuillController.basic();
+      });
     }
   }
 
@@ -375,7 +726,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Select Technician(s)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              title: const Text("Select Technician(s)",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -404,7 +756,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                   child: const Text("CANCEL"),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0068C9)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0068C9)),
                   onPressed: () {
                     setState(() {
                       _selectedTechnicians = tempSelected;
@@ -412,7 +765,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     });
                     Navigator.pop(ctx);
                   },
-                  child: const Text("OK", style: TextStyle(color: Colors.white)),
+                  child:
+                      const Text("OK", style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -447,7 +801,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0068C9), 
+              primary: Color(0xFF0068C9),
               onPrimary: Colors.white,
               onSurface: Color(0xFF31333F),
             ),
@@ -481,13 +835,21 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     _tyController.clear();
     _snController.clear();
     _prController.clear();
-    _fuLegacyController.clear();
+    
+    _quillController.clear();
     _gDriveController.clear();
     _technicianSigController.clear();
     _customerSigController.clear();
+
+    // FIXED: Membersihkan sisa resources untuk menghindari kebocoran memori
+    for (var block in _actionBlocks) {
+      block.textController.dispose();
+    }
+    
     _actionBlocks.clear();
     _selectedTechnicians.clear();
     widget.onClearLoad();
+    
     setState(() {
       _activeDraftId = null;
       _dateController.text = _formatDate(DateTime.now());
@@ -524,16 +886,20 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.only(left: 35, right: 35, top: 35, bottom: 40), 
+        margin: const pw.EdgeInsets.only(
+            left: 35, right: 35, top: 35, bottom: 40),
         header: (pw.Context context) {
           if (context.pageNumber != 1) {
-            return pw.SizedBox(height: 40); 
+            return pw.SizedBox(height: 40);
           }
           return pw.Container(
             margin: const pw.EdgeInsets.only(bottom: 6),
-            alignment: pw.Alignment.center, 
-            child: pdfLogo != null 
-                ? pw.Container(width: 220, height: 70, child: pw.Image(pdfLogo, fit: pw.BoxFit.contain))
+            alignment: pw.Alignment.center,
+            child: pdfLogo != null
+                ? pw.Container(
+                    width: 220,
+                    height: 70,
+                    child: pw.Image(pdfLogo, fit: pw.BoxFit.contain))
                 : pw.SizedBox(height: 40),
           );
         },
@@ -541,113 +907,237 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
           return pw.Container(
             alignment: pw.Alignment.centerRight,
             padding: const pw.EdgeInsets.only(top: 10),
-            child: pw.Text("Page ${context.pageNumber}", style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+            child: pw.Text("Page ${context.pageNumber}",
+                style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
           );
         },
         build: (pw.Context context) => [
           pw.Container(
             width: double.infinity,
-            decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFF2B82C9)),
+            decoration:
+                const pw.BoxDecoration(color: PdfColor.fromInt(0xFF2B82C9)),
             padding: const pw.EdgeInsets.symmetric(vertical: 5),
             alignment: pw.Alignment.center,
-            child: pw.Text("SERVICE REPORT", style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white, letterSpacing: 0.5)),
+            child: pw.Text("SERVICE REPORT",
+                style: pw.TextStyle(
+                    fontSize: 13,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.white,
+                    letterSpacing: 0.5)),
           ),
-          
-          pw.SizedBox(height: 8), 
-          
+          pw.SizedBox(height: 8),
           pw.Table(
             columnWidths: {
-              0: const pw.FixedColumnWidth(65), 
-              1: const pw.FlexColumnWidth(1.2), 
-              2: const pw.FixedColumnWidth(10), 
-              3: const pw.FixedColumnWidth(60), 
-              4: const pw.FlexColumnWidth(1.0)  
+              0: const pw.FixedColumnWidth(65),
+              1: const pw.FlexColumnWidth(1.2),
+              2: const pw.FixedColumnWidth(10),
+              3: const pw.FixedColumnWidth(60),
+              4: const pw.FlexColumnWidth(1.0)
             },
-            border: null, 
-            defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom, 
-            children: [
-              pw.TableRow(children: [
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Technician:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_cbController.text, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 10), 
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Date:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_dateController.text, style: pw.TextStyle(fontSize: 9.5))),
-              ]),
-              pw.TableRow(children: [
-                pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8), pw.SizedBox(height: 8),
-              ]),
-              pw.TableRow(children: [
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Customer:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_cuController.text, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 10), 
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Meet with:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_mwController.text, style: pw.TextStyle(fontSize: 9.5))),
-              ]),
-            ],
-          ),
-          
-          pw.SizedBox(height: 8), 
-          
-          pw.Table(
-            columnWidths: {
-              0: const pw.FixedColumnWidth(55), 
-              1: const pw.FlexColumnWidth(1.2), 
-              2: const pw.FixedColumnWidth(10), 
-              3: const pw.FixedColumnWidth(35), 
-              4: const pw.FlexColumnWidth(0.9), 
-              5: const pw.FixedColumnWidth(10), 
-              6: const pw.FixedColumnWidth(30), 
-              7: const pw.FlexColumnWidth(0.8)  
-            },
-            border: null, 
+            border: null,
             defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom,
             children: [
               pw.TableRow(children: [
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Machine:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_selectedMachine, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 10), 
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("Type:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_tyController.text, style: pw.TextStyle(fontSize: 9.5))),
-                pw.SizedBox(width: 10), 
-                pw.Container(color: const PdfColor.fromInt(0xFFF0F4F8), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text("S/N:", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
-                pw.Container(decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF0F4F8), border: pw.Border(bottom: pw.BorderSide(color: PdfColors.black, width: 0.4))), padding: const pw.EdgeInsets.only(top: 3, bottom: 3, left: 4, right: 4), child: pw.Text(_snController.text, style: pw.TextStyle(fontSize: 9.5))),
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("Technician:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_cbController.text,
+                        style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10),
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("Date:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_dateController.text,
+                        style: pw.TextStyle(fontSize: 9.5))),
+              ]),
+              pw.TableRow(children: [
+                pw.SizedBox(height: 8),
+                pw.SizedBox(height: 8),
+                pw.SizedBox(height: 8),
+                pw.SizedBox(height: 8),
+                pw.SizedBox(height: 8),
+              ]),
+              pw.TableRow(children: [
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("Customer:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_cuController.text,
+                        style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10),
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("Meet with:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_mwController.text,
+                        style: pw.TextStyle(fontSize: 9.5))),
+              ]),
+            ],
+          ),
+          pw.SizedBox(height: 8),
+          pw.Table(
+            columnWidths: {
+              0: const pw.FixedColumnWidth(55),
+              1: const pw.FlexColumnWidth(1.2),
+              2: const pw.FixedColumnWidth(10),
+              3: const pw.FixedColumnWidth(35),
+              4: const pw.FlexColumnWidth(0.9),
+              5: const pw.FixedColumnWidth(10),
+              6: const pw.FixedColumnWidth(30),
+              7: const pw.FlexColumnWidth(0.8)
+            },
+            border: null,
+            defaultVerticalAlignment: pw.TableCellVerticalAlignment.bottom,
+            children: [
+              pw.TableRow(children: [
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("Machine:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_selectedMachine,
+                        style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10),
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("Type:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_tyController.text,
+                        style: pw.TextStyle(fontSize: 9.5))),
+                pw.SizedBox(width: 10),
+                pw.Container(
+                    color: const PdfColor.fromInt(0xFFF0F4F8),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text("S/N:",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold))),
+                pw.Container(
+                    decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFF0F4F8),
+                        border: pw.Border(
+                            bottom: pw.BorderSide(
+                                color: PdfColors.black, width: 0.4))),
+                    padding: const pw.EdgeInsets.only(
+                        top: 3, bottom: 3, left: 4, right: 4),
+                    child: pw.Text(_snController.text,
+                        style: pw.TextStyle(fontSize: 9.5))),
               ]),
             ],
           ),
           pw.SizedBox(height: 18),
-
-          pw.Text("PROBLEM DESCRIPTION", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.black)),
-          pw.Container(margin: const pw.EdgeInsets.only(top: 2, bottom: 6), height: 0.8, color: PdfColors.black), 
-          pw.Text(_prController.text, style: pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3)),
+          pw.Text("PROBLEM DESCRIPTION",
+              style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 10,
+                  color: PdfColors.black)),
+          pw.Container(
+              margin: const pw.EdgeInsets.only(top: 2, bottom: 6),
+              height: 0.8,
+              color: PdfColors.black),
+          pw.Text(_prController.text,
+              style: pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3)),
           pw.SizedBox(height: 18),
+          pw.Text("FOLLOW UP ACTION",
+              style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 10,
+                  color: PdfColors.black)),
+          pw.Container(
+              margin: const pw.EdgeInsets.only(top: 2, bottom: 6),
+              height: 0.8,
+              color: PdfColors.black),
 
-          pw.Text("FOLLOW UP ACTION", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.black)),
-          pw.Container(margin: const pw.EdgeInsets.only(top: 2, bottom: 6), height: 0.8, color: PdfColors.black),
-          
-          if (_fuLegacyController.text.isNotEmpty) ...[
-            pw.Text(_fuLegacyController.text, style: pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3)),
-            pw.SizedBox(height: 10),
-          ],
-          
+          ..._buildFollowUpPdfWidgets(),
+
           pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start, 
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: List.generate(_actionBlocks.length, (index) {
               final block = _actionBlocks[index];
-              double targetHeight = block.imageSize; 
+              double targetHeight = block.imageSize;
 
               return pw.Container(
                 margin: const pw.EdgeInsets.only(bottom: 12),
                 child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start, 
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    if (block.imageFiles.isNotEmpty) 
+                    if (block.imageFiles.isNotEmpty)
                       pw.Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: block.imageFiles.map((img) {
                           return pw.Container(
-                            height: targetHeight, 
-                            child: pw.Image(pw.MemoryImage(img.readAsBytesSync()), fit: pw.BoxFit.contain),
+                            height: targetHeight,
+                            child: pw.Image(
+                                pw.MemoryImage(img.readAsBytesSync()),
+                                fit: pw.BoxFit.contain),
                           );
                         }).toList(),
                       ),
@@ -655,51 +1145,69 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     if (block.textController.text.isNotEmpty)
                       pw.Text(
                         block.textController.text,
-                        style: pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3, fontStyle: pw.FontStyle.italic),
+                        style: pw.TextStyle(
+                            fontSize: 9.5,
+                            lineSpacing: 1.3,
+                            fontStyle: pw.FontStyle.italic),
                       ),
                   ],
                 ),
               );
             }),
           ),
-
-          pw.Spacer(), 
-          
+          pw.Spacer(),
           pw.Container(
             padding: const pw.EdgeInsets.only(top: 10, left: 30, right: 30),
-            decoration: const pw.BoxDecoration(border: pw.Border(top: pw.BorderSide(color: PdfColors.grey400, width: 0.5))),
+            decoration: const pw.BoxDecoration(
+                border: pw.Border(
+                    top: pw.BorderSide(color: PdfColors.grey400, width: 0.5))),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center, 
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
-                    pw.Text("Service Technician,", style: pw.TextStyle(fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
+                    pw.Text("Service Technician,",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
                     pw.SizedBox(height: 15),
-                    
-                    if (techSigBytes != null) 
-                      pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(techSigBytes)))
-                    else 
-                      pw.SizedBox(height: 40), 
-                      
-                    pw.SizedBox(height: 10), 
-                    pw.Text(_cbController.text.isNotEmpty ? _cbController.text : "...........................", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
+                    if (techSigBytes != null)
+                      pw.Container(
+                          width: 100,
+                          height: 40,
+                          child: pw.Image(pw.MemoryImage(techSigBytes)))
+                    else
+                      pw.SizedBox(height: 40),
+                    pw.SizedBox(height: 10),
+                    pw.Text(
+                        _cbController.text.isNotEmpty
+                            ? _cbController.text
+                            : "...........................",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
-                
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center, 
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
-                    pw.Text("Customer,", style: pw.TextStyle(fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
-                    pw.SizedBox(height: 15), 
-                    
-                    if (custSigBytes != null) 
-                      pw.Container(width: 100, height: 40, child: pw.Image(pw.MemoryImage(custSigBytes)))
-                    else 
-                      pw.SizedBox(height: 40), 
-                      
-                    pw.SizedBox(height: 10), 
-                    pw.Text(_mwController.text.isNotEmpty ? _mwController.text : "...........................", style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
+                    pw.Text("Customer,",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
+                    pw.SizedBox(height: 15),
+                    if (custSigBytes != null)
+                      pw.Container(
+                          width: 100,
+                          height: 40,
+                          child: pw.Image(pw.MemoryImage(custSigBytes)))
+                    else
+                      pw.SizedBox(height: 40),
+                    pw.SizedBox(height: 10),
+                    pw.Text(
+                        _mwController.text.isNotEmpty
+                            ? _mwController.text
+                            : "...........................",
+                        style: pw.TextStyle(
+                            fontSize: 9.5, fontWeight: pw.FontWeight.bold)),
                   ],
                 ),
               ],
@@ -714,7 +1222,9 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   void _openRealPrintPreviewPage() async {
     if (_cbController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Technician Name is required to preview document!'), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text('❌ Technician Name is required to preview document!'),
+            backgroundColor: Colors.red),
       );
       return;
     }
@@ -725,15 +1235,16 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         builder: (context) => Scaffold(
           appBar: AppBar(
             backgroundColor: const Color(0xFF0068C9),
-            title: const Text("Live PDF Composition", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            title: const Text("Live PDF Composition",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
           body: PdfPreview(
             build: (format) async {
               final pdfDoc = await _buildActivePdfDocument();
               return pdfDoc.save();
             },
-            allowPrinting: false, 
-            allowSharing: false,  
+            allowPrinting: false,
+            allowSharing: false,
             canChangeOrientation: false,
             canChangePageFormat: false,
             initialPageFormat: PdfPageFormat.a4,
@@ -747,9 +1258,13 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   Future<void> _syncToGoogleSheets() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_googleSheetsUrl.isEmpty || _googleSheetsUrl.contains("MASUKKAN_URL")) {
+    if (_googleSheetsUrl.isEmpty ||
+        _googleSheetsUrl.contains("MASUKKAN_URL")) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Please insert your Apps Script Deployment URL first!'), backgroundColor: Colors.orange),
+        const SnackBar(
+            content:
+                Text('⚠️ Please insert your Apps Script Deployment URL first!'),
+            backgroundColor: Colors.orange),
       );
       return;
     }
@@ -769,7 +1284,15 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         int year = int.parse(parts[2]);
 
         DateTime parsedDate = DateTime(year, month, day);
-        List<String> hariEnglish = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        List<String> hariEnglish = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ];
         namaHari = hariEnglish[parsedDate.weekday % 7];
       }
     } catch (e) {
@@ -779,23 +1302,24 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     String blockLogsText = "";
     for (var b in _actionBlocks) {
       if (b.textController.text.isNotEmpty) {
-        blockLogsText += "\n- ${b.textController.text} (${b.imageFiles.length} images annexed)";
+        blockLogsText +=
+            "\n- ${b.textController.text} (${b.imageFiles.length} images annexed)";
       }
     }
-    String gabunganAction = "${_fuLegacyController.text}$blockLogsText".trim();
+    String gabunganAction = "$_fuPlainText$blockLogsText".trim();
 
     final Map<String, dynamic> reportData = {
       "date": _dateController.text,
-      "day": namaHari, 
+      "day": namaHari,
       "customer": _cuController.text,
       "machine": _selectedMachine,
       "machineType": _tyController.text,
       "serialNo": _snController.text,
       "problemDescription": _prController.text,
-      "actionTaken": gabunganAction, 
+      "actionTaken": gabunganAction,
       "completeBy": _cbController.text,
       "status": _selectedStatus,
-      "serviceReportLink": _gDriveController.text, 
+      "serviceReportLink": _gDriveController.text,
     };
 
     try {
@@ -805,15 +1329,20 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 302) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('🚀 Success! Data & GDrive link integrated into Spreadsheet.'), backgroundColor: Color(0xFF097969)),
-        );
-        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    '🚀 Success! Data & GDrive link integrated into Spreadsheet.'),
+                backgroundColor: Color(0xFF097969)),
+          );
+        }
+
         if (_activeDraftId != null) {
           final existing = await widget.isar.localReports.get(_activeDraftId!);
           if (existing != null) {
             await widget.isar.writeTxn(() async {
-              existing.isSynced = true; 
+              existing.isSynced = true;
               await widget.isar.localReports.put(existing);
             });
           }
@@ -822,13 +1351,18 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         throw Exception("Server return code: ${response.statusCode}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Sync failed: $e'), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('❌ Sync failed: $e'), backgroundColor: Colors.red),
+        );
+      }
     } finally {
-      setState(() {
-        _isSyncing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+        });
+      }
     }
   }
 
@@ -848,23 +1382,22 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   void _pickBlockImage(int index, ImageSource source) async {
     if (source == ImageSource.gallery) {
       final List<XFile> pickedFiles = await _picker.pickMultiImage(
-        imageQuality: 35, 
+        imageQuality: 35,
       );
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _actionBlocks[index].imageFiles.addAll(
-            pickedFiles.map((file) => File(file.path))
-          ); 
+              pickedFiles.map((file) => File(file.path)));
         });
       }
     } else {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
-        imageQuality: 35, 
+        imageQuality: 35,
       );
       if (pickedFile != null) {
         setState(() {
-          _actionBlocks[index].imageFiles.add(File(pickedFile.path)); 
+          _actionBlocks[index].imageFiles.add(File(pickedFile.path));
         });
       }
     }
@@ -874,41 +1407,52 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     if (_formKey.currentState!.validate()) {
       final techSigBytes = await _technicianSigController.toPngBytes();
       final custSigBytes = await _customerSigController.toPngBytes();
-      
+
+      final String actionTakenQuillJson =
+          jsonEncode(_quillController.document.toDelta().toJson());
+
       List<String> blocksJsonList = [];
       String blockLogsText = "";
       for (var b in _actionBlocks) {
-        blocksJsonList.add(await b.toJsonString()); 
-        blockLogsText += "\n- [Photo Block Logs (Size: ${b.imageSize.toInt()}px) - Total photos: ${b.imageFiles.length}]: ${b.textController.text}";
+        blocksJsonList.add(await b.toJsonString());
+        blockLogsText +=
+            "\n- [Photo Block Logs (Size: ${b.imageSize.toInt()}px) - Total photos: ${b.imageFiles.length}]: ${b.textController.text}";
       }
 
       final newReport = LocalReport()
         ..completeBy = _cbController.text
         ..customerName = _cuController.text
         ..machine = _selectedMachine
-        ..date = _dateController.text 
+        ..date = _dateController.text
         ..meetWith = _mwController.text
         ..machineType = _tyController.text
         ..serialNo = _snController.text
         ..problemDescription = _prController.text
-        ..actionTaken = "${_fuLegacyController.text}\n=== CHRONOLOGICAL PHOTO LOGS ===$blockLogsText"
+        ..actionTaken =
+            "$actionTakenQuillJson\n=== CHRONOLOGICAL PHOTO LOGS ===$blockLogsText"
         ..status = _selectedStatus
-        ..technicianSignatureBase64 = techSigBytes != null ? techSigBytes.toString() : null
-        ..customerSignatureBase64 = custSigBytes != null ? custSigBytes.toString() : null
-        ..savedActionBlocks = blocksJsonList 
+        ..technicianSignatureBase64 =
+            techSigBytes != null ? base64Encode(techSigBytes) : null
+        ..customerSignatureBase64 =
+            custSigBytes != null ? base64Encode(custSigBytes) : null
+        ..savedActionBlocks = blocksJsonList
         ..isSynced = false;
 
       if (_activeDraftId != null) {
-        newReport.id = _activeDraftId!; 
+        newReport.id = _activeDraftId!;
       }
 
       await widget.isar.writeTxn(() async {
         await widget.isar.localReports.put(newReport);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('💾 Draft Saved with Photos!'), backgroundColor: Color(0xFF097969)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('💾 Draft Saved with Photos!'),
+              backgroundColor: Color(0xFF097969)),
+        );
+      }
     }
   }
 
@@ -916,22 +1460,31 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     final pdfDoc = await _buildActivePdfDocument();
     try {
       final output = await getApplicationDocumentsDirectory();
-      String customerName = _cuController.text.trim().replaceAll(RegExp(r'[^\w\s\-]'), '');
+      String customerName =
+          _cuController.text.trim().replaceAll(RegExp(r'[^\w\s\-]'), '');
       if (customerName.isEmpty) customerName = "Customer";
-      
-      final file = File("${output.path}/Report_${customerName}_${_dateController.text}.pdf");
+
+      final file = File(
+          "${output.path}/Report_${customerName}_${_dateController.text}.pdf");
       await file.writeAsBytes(await pdfDoc.save());
 
       await Share.shareXFiles([XFile(file.path)]);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Failed to execute PDF output: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('❌ Failed to execute PDF output: $e')));
+      }
     }
   }
 
   Widget _buildStreamlitLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6, top: 12),
-      child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF31333F))),
+      child: Text(text,
+          style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF31333F))),
     );
   }
 
@@ -939,33 +1492,38 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 80, 
-        backgroundColor: const Color(0xFF0068C9), 
+        toolbarHeight: 80,
+        backgroundColor: const Color(0xFF0068C9),
         elevation: 0,
-        centerTitle: true, 
+        centerTitle: true,
         title: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center, 
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), 
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.white, 
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Image.asset(
-                'assets/logo_aplikasi.png', 
-                height: 40,  
+                'assets/logo_aplikasi.png',
+                height: 40,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => 
-                    const Text('⚠️ Logo error', style: TextStyle(color: Colors.red, fontSize: 10)),
+                errorBuilder: (context, error, stackTrace) => const Text(
+                    '⚠️ Logo error',
+                    style: TextStyle(color: Colors.red, fontSize: 10)),
               ),
             ),
             Text(
-              _activeDraftId == null ? 'Service Report Input Portal' : 'Editing Draft Active (#${_activeDraftId})', 
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)
-            ),
+                _activeDraftId == null
+                    ? 'Service Report Input Portal'
+                    : 'Editing Draft Active (#$_activeDraftId)',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
@@ -991,18 +1549,19 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                 onTap: _showTechnicianMultiSelectDialog,
                 decoration: const InputDecoration(
                   hintText: "Select Technician(s)",
-                  suffixIcon: Icon(Icons.arrow_drop_down, color: Color(0xFF0068C9)),
+                  suffixIcon:
+                      Icon(Icons.arrow_drop_down, color: Color(0xFF0068C9)),
                 ),
                 validator: (v) => v!.isEmpty ? 'This field is required' : null,
               ),
-              
               _buildStreamlitLabel("Customer"),
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 value: _selectedCustomer,
                 decoration: const InputDecoration(
                   hintText: "Select Customer",
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
                 items: _customerList.map((String value) {
                   return DropdownMenuItem<String>(
@@ -1033,39 +1592,37 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                   ),
                 ),
               ],
-
               _buildStreamlitLabel("Meet with"),
               TextFormField(controller: _mwController),
-
               _buildStreamlitLabel("Date"),
               TextFormField(
                 controller: _dateController,
-                readOnly: true, 
-                onTap: () => _selectDate(context), 
+                readOnly: true,
+                onTap: () => _selectDate(context),
                 decoration: const InputDecoration(
-                  suffixIcon: Icon(Icons.calendar_month, color: Color(0xFF0068C9)), 
+                  suffixIcon:
+                      Icon(Icons.calendar_month, color: Color(0xFF0068C9)),
                 ),
               ),
-
               _buildStreamlitLabel("Machine"),
               DropdownButtonFormField(
                 value: _selectedMachine,
-                items: _machines.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                onChanged: (v) => setState(() => _selectedMachine = v.toString()),
+                items: _machines
+                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                    .toList(),
+                onChanged: (v) =>
+                    setState(() => _selectedMachine = v.toString()),
               ),
-              
               _buildStreamlitLabel("Machine Type"),
               TextFormField(controller: _tyController),
-              
               _buildStreamlitLabel("Serial No"),
               TextFormField(controller: _snController),
-              
               const SizedBox(height: 15),
-
               Card(
                 color: Colors.white,
                 elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -1073,14 +1630,120 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     children: [
                       _buildStreamlitLabel("Problem Description"),
                       TextFormField(controller: _prController, maxLines: 4),
-                      
-                      _buildStreamlitLabel("Action Taken / Follow Up"),
-                      TextFormField(controller: _fuLegacyController, maxLines: 6, decoration: const InputDecoration(hintText: "")),
-                      
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStreamlitLabel("Action Taken / Follow Up"),
+                          TextButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _showToolbar = !_showToolbar;
+                              });
+                            },
+                            icon: Icon(
+                              _showToolbar
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 16,
+                              color: const Color(0xFF0068C9),
+                            ),
+                            label: Text(
+                              _showToolbar ? "Hide Toolbar" : "Show Toolbar",
+                              style: const TextStyle(
+                                  color: Color(0xFF0068C9), fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                        ),
+                        child: Column(
+                          children: [
+                            if (_showToolbar) ...[
+                              QuillSimpleToolbar(
+  configurations: QuillSimpleToolbarConfigurations(
+    controller: _quillController,
+    
+    // 1. Matikan mode multi-baris agar toolbar hanya 1 baris (bisa digeser horizontal)
+    multiRowsDisplay: false, 
+    
+    // 2. Tampilkan fitur yang esensial saja
+    showUndo: true,
+    showRedo: true,
+    showBoldButton: true,
+    showItalicButton: true,
+    showUnderLineButton: true,
+    showListBullets: true,
+    showListNumbers: true,
+    
+    // 3. Sembunyikan semua fitur yang memakan space & tidak relevan untuk PDF
+    showColorButton: false,
+    showBackgroundColorButton: false,
+    showClearFormat: false,
+    showHeaderStyle: false,
+    showStrikeThrough: false,
+    showQuote: false,
+    showIndent: false,
+    showAlignmentButtons: false,
+    showLeftAlignment: false,
+    showCenterAlignment: false,
+    showRightAlignment: false,
+    showJustifyAlignment: false,
+    showListCheck: false,
+    showClipboardCut: false,
+    showClipboardCopy: false,
+    showClipboardPaste: false,
+    showFontFamily: false,
+    showFontSize: false,
+    showSearchButton: false,
+    showSubscript: false,
+    showSuperscript: false,
+    showInlineCode: false,
+    showCodeBlock: false,
+    showLink: false,
+                                  customButtons: [
+                                    QuillToolbarCustomButtonOptions(
+                                      icon: const Icon(
+                                          Icons.add_photo_alternate),
+                                      tooltip: 'Insert Foto/Drawing',
+                                      onPressed: () =>
+                                          _showInsertMediaMenu(context),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(
+                                  height: 1, color: Color(0xFFE0E0E0)),
+                            ],
+                            Container(
+                              constraints: const BoxConstraints(minHeight: 180),
+                              padding: const EdgeInsets.all(12),
+                              child: QuillEditor.basic(
+                                configurations: QuillEditorConfigurations(
+                                  controller: _quillController,
+                                  placeholder:
+                                      'Type action taken / follow up details here...',
+                                  embedBuilders: [
+                                    ImageEmbedBuilder(), 
+                                    SizedImageEmbedBuilder(), 
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 15),
-                      const Text("📸 Attachments:", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                      const Text("📸 Attachments:",
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0068C9))),
                       const Divider(color: Color(0xFFE0E0E0)),
-
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -1095,23 +1758,31 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFF8F9FA),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("Photo Block #${index + 1} (${block.imageFiles.length} Photos)", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF31333F))),
+                                    Text(
+                                        "Photo Block #${index + 1} (${block.imageFiles.length} Photos)",
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                            color: Color(0xFF31333F))),
                                     IconButton(
-                                      icon: const Icon(Icons.delete_forever, color: Colors.red, size: 20),
-                                      onPressed: () => _removeActionBlock(index),
+                                      icon: const Icon(Icons.delete_forever,
+                                          color: Colors.red, size: 20),
+                                      onPressed: () =>
+                                          _removeActionBlock(index),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
-                                
                                 if (block.imageFiles.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
@@ -1123,24 +1794,34 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                           height: previewHeight,
                                           width: previewHeight * 0.8,
                                           decoration: BoxDecoration(
-                                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(
+                                                color: const Color(0xFFCBD5E1)),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(4),
-                                            child: Image.file(file, fit: BoxFit.cover),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            child: Image.file(file,
+                                                fit: BoxFit.cover),
                                           ),
                                         );
                                       }).toList(),
                                     ),
                                   ),
-                                
                                 Row(
                                   children: [
                                     ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE2E8F0), elevation: 0),
-                                      icon: const Icon(Icons.add_a_photo, size: 14, color: Colors.black87),
-                                      label: const Text("Add Photo", style: TextStyle(fontSize: 11, color: Colors.black87)),
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFFE2E8F0),
+                                          elevation: 0),
+                                      icon: const Icon(Icons.add_a_photo,
+                                          size: 14, color: Colors.black87),
+                                      label: const Text("Add Photo",
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.black87)),
                                       onPressed: () {
                                         showModalBottomSheet(
                                           context: context,
@@ -1148,14 +1829,25 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                             child: Wrap(
                                               children: [
                                                 ListTile(
-                                                  leading: const Icon(Icons.camera_alt),
+                                                  leading: const Icon(
+                                                      Icons.camera_alt),
                                                   title: const Text('Camera'),
-                                                  onTap: () { Navigator.pop(ctx); _pickBlockImage(index, ImageSource.camera); },
+                                                  onTap: () {
+                                                    Navigator.pop(ctx);
+                                                    _pickBlockImage(index,
+                                                        ImageSource.camera);
+                                                  },
                                                 ),
                                                 ListTile(
-                                                  leading: const Icon(Icons.photo_library),
-                                                  title: const Text('Phone Gallery'),
-                                                  onTap: () { Navigator.pop(ctx); _pickBlockImage(index, ImageSource.gallery); },
+                                                  leading: const Icon(
+                                                      Icons.photo_library),
+                                                  title: const Text(
+                                                      'Phone Gallery'),
+                                                  onTap: () {
+                                                    Navigator.pop(ctx);
+                                                    _pickBlockImage(index,
+                                                        ImageSource.gallery);
+                                                  },
                                                 ),
                                               ],
                                             ),
@@ -1166,23 +1858,37 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                     const SizedBox(width: 15),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
                                         children: [
-                                          Text("Image Size: ${block.imageSize.toInt()} px", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                                          Text(
+                                              "Image Size: ${block.imageSize.toInt()} px",
+                                              style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF0068C9))),
                                           SizedBox(
                                             height: 25,
                                             child: SliderTheme(
-                                              data: SliderTheme.of(context).copyWith(
+                                              data: SliderTheme.of(context)
+                                                  .copyWith(
                                                 trackHeight: 3.0,
-                                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
-                                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
+                                                thumbShape:
+                                                    const RoundSliderThumbShape(
+                                                        enabledThumbRadius:
+                                                            7.0),
+                                                overlayShape:
+                                                    const RoundSliderOverlayShape(
+                                                        overlayRadius: 14.0),
                                               ),
                                               child: Slider(
                                                 value: block.imageSize,
                                                 min: 60.0,
                                                 max: 280.0,
-                                                activeColor: const Color(0xFF0068C9),
-                                                inactiveColor: const Color(0xFFCBD5E1),
+                                                activeColor:
+                                                    const Color(0xFF0068C9),
+                                                inactiveColor:
+                                                    const Color(0xFFCBD5E1),
                                                 onChanged: (newValue) {
                                                   setState(() {
                                                     block.imageSize = newValue;
@@ -1201,7 +1907,8 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                                   controller: block.textController,
                                   maxLines: 2,
                                   decoration: const InputDecoration(
-                                    hintText: "Type specific explanation for this photo block...",
+                                    hintText:
+                                        "Type specific explanation for this photo block...",
                                     hintStyle: TextStyle(fontSize: 12),
                                   ),
                                 ),
@@ -1210,104 +1917,139 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                           );
                         },
                       ),
-
                       OutlinedButton.icon(
                         onPressed: _addNewActionBlock,
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF0068C9), width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          side: const BorderSide(
+                              color: Color(0xFF0068C9), width: 1.5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6)),
                         ),
                         icon: const Icon(Icons.add, color: Color(0xFF0068C9)),
-                        label: const Text('➕ ADD NEW PHOTO BLOCK', style: TextStyle(color: Color(0xFF0068C9), fontWeight: FontWeight.bold, fontSize: 13)),
+                        label: const Text('➕ ADD NEW PHOTO BLOCK',
+                            style: TextStyle(
+                                color: Color(0xFF0068C9),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13)),
                       ),
-
                       const SizedBox(height: 12),
                       _buildStreamlitLabel("Status"),
                       DropdownButtonFormField(
                         value: _selectedStatus,
-                        items: _statuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                        onChanged: (v) => setState(() => _selectedStatus = v.toString()),
+                        items: _statuses
+                            .map((s) =>
+                                DropdownMenuItem(value: s, child: Text(s)))
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedStatus = v.toString()),
                       ),
                     ],
                   ),
                 ),
               ),
-              
               const SizedBox(height: 15),
-
               Card(
                 color: Colors.white,
                 elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("✍️ SIGNATURE", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0068C9))),
+                      const Text("✍️ SIGNATURE",
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0068C9))),
                       const Divider(color: Color(0xFFE0E0E0)),
                       const SizedBox(height: 15),
-                      
-                      const Text("Service Technician", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      const Text("Service Technician",
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
-                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
-                        child: Signature(controller: _technicianSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                            borderRadius: BorderRadius.circular(6)),
+                        child: Signature(
+                            controller: _technicianSigController,
+                            height: 200,
+                            backgroundColor: const Color(0xFFF8F9FA)),
                       ),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: TextButton(onPressed: () => _technicianSigController.clear(), child: const Text("Reset Signature", style: TextStyle(color: Colors.red, fontSize: 12))),
+                        child: TextButton(
+                            onPressed: () => _technicianSigController.clear(),
+                            child: const Text("Reset Signature",
+                                style: TextStyle(
+                                    color: Colors.red, fontSize: 12))),
                       ),
-                      
                       const SizedBox(height: 10),
                       const Divider(color: Color(0xFFE0E0E0)),
                       const SizedBox(height: 15),
-
-                      const Text("Customer", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      const Text("Customer",
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
-                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFCBD5E1)), borderRadius: BorderRadius.circular(6)),
-                        child: Signature(controller: _customerSigController, height: 200, backgroundColor: const Color(0xFFF8F9FA)),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                            borderRadius: BorderRadius.circular(6)),
+                        child: Signature(
+                            controller: _customerSigController,
+                            height: 200,
+                            backgroundColor: const Color(0xFFF8F9FA)),
                       ),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: TextButton(onPressed: () => _customerSigController.clear(), child: const Text("Reset Signature", style: TextStyle(color: Colors.red, fontSize: 12))),
+                        child: TextButton(
+                            onPressed: () => _customerSigController.clear(),
+                            child: const Text("Reset Signature",
+                                style: TextStyle(
+                                    color: Colors.red, fontSize: 12))),
                       ),
                     ],
                   ),
                 ),
               ),
-              
               const SizedBox(height: 25),
-
               OutlinedButton.icon(
                 onPressed: _openRealPrintPreviewPage,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   side: const BorderSide(color: Color(0xFF0068C9), width: 1.8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-                icon: const Icon(Icons.picture_in_picture, color: Color(0xFF0068C9)),
-                label: const Text('🔍PRINT PREVIEW', style: TextStyle(color: Color(0xFF0068C9), fontWeight: FontWeight.bold, fontSize: 14)),
+                icon: const Icon(Icons.picture_in_picture,
+                    color: Color(0xFF0068C9)),
+                label: const Text('🔍PRINT PREVIEW',
+                    style: TextStyle(
+                        color: Color(0xFF0068C9),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14)),
               ),
-
               const SizedBox(height: 12),
-
               ElevatedButton.icon(
                 onPressed: _generatePdfReport,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0068C9), 
+                  backgroundColor: const Color(0xFF0068C9),
                   minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
-                label: const Text('🚀 GENERATE & SHARE PDF REPORT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                label: const Text('🚀 GENERATE & SHARE PDF REPORT',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
               ),
-              
               const SizedBox(height: 15),
-
               _buildStreamlitLabel("Link Google Drive PDF"),
               TextField(
                 controller: _gDriveController,
@@ -1317,32 +2059,42 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                   suffixIcon: Icon(Icons.link, color: Color(0xFF0068C9)),
                 ),
               ),
-
               const SizedBox(height: 15),
-              
-              _isSyncing 
-                ? const Center(child: Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator()))
-                : ElevatedButton.icon(
-                    onPressed: _syncToGoogleSheets,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A), 
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              _isSyncing
+                  ? const Center(
+                      child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator()))
+                  : ElevatedButton.icon(
+                      onPressed: _syncToGoogleSheets,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.cloud_upload, color: Colors.white),
+                      label: const Text('🚀 SYNC DATA TO GOOGLE SHEETS',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15)),
                     ),
-                    icon: const Icon(Icons.cloud_upload, color: Colors.white),
-                    label: const Text('🚀 SYNC DATA TO GOOGLE SHEETS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                  ),
-
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: _saveDataLokal,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   side: const BorderSide(color: Color(0xFF0068C9), width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 icon: const Icon(Icons.save, color: Color(0xFF0068C9)),
-                label: const Text('💾 SAVE DRAFT', style: TextStyle(color: Color(0xFF0068C9), fontWeight: FontWeight.bold, fontSize: 15)),
+                label: const Text('💾 SAVE DRAFT',
+                    style: TextStyle(
+                        color: Color(0xFF0068C9),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15)),
               ),
               const SizedBox(height: 30),
             ],
@@ -1369,7 +2121,8 @@ class HistoryAndDraftPage extends StatefulWidget {
   State<HistoryAndDraftPage> createState() => _HistoryAndDraftPageState();
 }
 
-class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> with SingleTickerProviderStateMixin {
+class _HistoryAndDraftPageState extends State<HistoryAndDraftPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -1388,8 +2141,12 @@ class _HistoryAndDraftPageState extends State<HistoryAndDraftPage> with SingleTi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Local Reports & Drafts Storage', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF0F172A), 
+        title: const Text('Local Reports & Drafts Storage',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
@@ -1459,7 +2216,8 @@ class ServiceReportDraftListView extends StatelessWidget {
         final reports = snapshot.data ?? [];
         if (reports.isEmpty) {
           return const Center(
-            child: Text('Belum ada draft Service Report tersimpan.', style: TextStyle(color: Colors.grey)),
+            child: Text('Belum ada draft Service Report tersimpan.',
+                style: TextStyle(color: Colors.grey)),
           );
         }
 
@@ -1473,7 +2231,9 @@ class ServiceReportDraftListView extends StatelessWidget {
               elevation: 1,
               child: ListTile(
                 title: Text(
-                  report.customerName?.isNotEmpty == true ? report.customerName! : 'Tanpa Nama Customer',
+                  report.customerName?.isNotEmpty == true
+                      ? report.customerName!
+                      : 'Tanpa Nama Customer',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
@@ -1484,7 +2244,8 @@ class ServiceReportDraftListView extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit_document, color: Color(0xFF0068C9)),
+                      icon: const Icon(Icons.edit_document,
+                          color: Color(0xFF0068C9)),
                       tooltip: 'Buka / Edit Draft',
                       onPressed: () => onLoadDraft(report),
                     ),
@@ -1496,7 +2257,8 @@ class ServiceReportDraftListView extends StatelessWidget {
                           context: context,
                           builder: (ctx) => AlertDialog(
                             title: const Text('Hapus Draft'),
-                            content: const Text('Apakah Anda yakin ingin menghapus draft ini?'),
+                            content: const Text(
+                                'Apakah Anda yakin ingin menghapus draft ini?'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
@@ -1507,7 +2269,8 @@ class ServiceReportDraftListView extends StatelessWidget {
                                   Navigator.pop(ctx);
                                   _deleteReport(context, report.id);
                                 },
-                                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                                child: const Text('Hapus',
+                                    style: TextStyle(color: Colors.red)),
                               ),
                             ],
                           ),
@@ -1535,11 +2298,12 @@ class SparePartDraftListView extends StatelessWidget {
     required this.onLoadDraft,
   });
 
-  Future<List<SparePartDraft>> _getDrafts() async {
-    return await isar.sparePartDrafts.where().sortByUpdatedAtDesc().findAll();
+  Future<List<SparePartDraft>> _getPartDrafts() async {
+    final drafts = await isar.sparePartDrafts.where().findAll();
+    return drafts.reversed.toList();
   }
 
-  Future<void> _deleteDraft(BuildContext context, int id) async {
+  Future<void> _deletePartDraft(BuildContext context, int id) async {
     await isar.writeTxn(() async {
       await isar.sparePartDrafts.delete(id);
     });
@@ -1553,7 +2317,7 @@ class SparePartDraftListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<SparePartDraft>>(
-      future: _getDrafts(),
+      future: _getPartDrafts(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1562,7 +2326,8 @@ class SparePartDraftListView extends StatelessWidget {
         final drafts = snapshot.data ?? [];
         if (drafts.isEmpty) {
           return const Center(
-            child: Text('Belum ada draft Part List tersimpan.', style: TextStyle(color: Colors.grey)),
+            child: Text('Belum ada draft Spare Part tersimpan.',
+                style: TextStyle(color: Colors.grey)),
           );
         }
 
@@ -1570,25 +2335,25 @@ class SparePartDraftListView extends StatelessWidget {
           itemCount: drafts.length,
           itemBuilder: (context, index) {
             final draft = drafts[index];
-            final itemLength = draft.items?.length ?? 0;
 
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               elevation: 1,
               child: ListTile(
                 title: Text(
-                  draft.customer?.isNotEmpty == true ? draft.customer! : 'Tanpa Nama Customer',
+                  draft.customerName ?? 'Tanpa Nama Customer',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Machine: ${draft.machine ?? '-'}\nTotal Part: $itemLength item | Tanggal: ${draft.date ?? '-'}',
+                  'Machine: ${draft.machine ?? '-'}\nTotal Parts: ${draft.partNames?.length ?? 0} | Tanggal: ${draft.date ?? '-'}',
                   style: const TextStyle(fontSize: 12),
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit_document, color: Color(0xFF0068C9)),
+                      icon: const Icon(Icons.edit_document,
+                          color: Color(0xFF0068C9)),
                       tooltip: 'Buka / Edit Draft',
                       onPressed: () => onLoadDraft(draft),
                     ),
@@ -1600,7 +2365,8 @@ class SparePartDraftListView extends StatelessWidget {
                           context: context,
                           builder: (ctx) => AlertDialog(
                             title: const Text('Hapus Draft'),
-                            content: const Text('Apakah Anda yakin ingin menghapus draft ini?'),
+                            content: const Text(
+                                'Apakah Anda yakin ingin menghapus draft ini?'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
@@ -1609,15 +2375,339 @@ class SparePartDraftListView extends StatelessWidget {
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(ctx);
-                                  _deleteDraft(context, draft.id);
+                                  _deletePartDraft(context, draft.id);
                                 },
-                                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                                child: const Text('Hapus',
+                                    style: TextStyle(color: Colors.red)),
                               ),
                             ],
                           ),
                         );
                       },
                     ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class DrawingDialog extends StatefulWidget {
+  const DrawingDialog({Key? key}) : super(key: key);
+
+  @override
+  _DrawingDialogState createState() => _DrawingDialogState();
+}
+
+class _DrawingDialogState extends State<DrawingDialog> {
+  late SignatureController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = SignatureController(
+      penStrokeWidth: 3,
+      penColor: Colors.black,
+    );
+  }
+
+  Future<void> _saveDrawing() async {
+    if (_controller.isEmpty) {
+      Navigator.pop(context);
+      return;
+    }
+    final bytes = await _controller.toPngBytes();
+    if (bytes != null) {
+      final tempDir = await getTemporaryDirectory();
+      final file = File(
+          '${tempDir.path}/drawing_${DateTime.now().millisecondsSinceEpoch}.png');
+      await file.writeAsBytes(bytes);
+      Navigator.pop(context, file.path);
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Buat Sketsa/Drawing', style: TextStyle(fontSize: 16)),
+      contentPadding: EdgeInsets.zero,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 300,
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+            ),
+            child: Signature(
+              controller: _controller,
+              backgroundColor: Colors.white,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _colorButton(Colors.black),
+                _colorButton(Colors.red),
+                _colorButton(Colors.blue),
+                _colorButton(Colors.green),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            _controller.clear();
+          },
+          child: const Text('Clear'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Batal'),
+        ),
+        ElevatedButton(
+          onPressed: _saveDrawing,
+          child: const Text('Simpan & Masukkan'),
+        ),
+      ],
+    );
+  }
+
+  Widget _colorButton(Color color) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          final strokeWidth = _controller.penStrokeWidth;
+          final bgColor = _controller.exportBackgroundColor;
+          _controller.dispose();
+          _controller = SignatureController(
+            penColor: color,
+            penStrokeWidth: strokeWidth,
+            exportBackgroundColor: bgColor,
+          );
+        });
+      },
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: _controller.penColor == color
+              ? Border.all(color: Colors.grey, width: 3)
+              : null,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+class ImageEmbedBuilder extends EmbedBuilder {
+  @override
+  String get key => 'image';
+
+  @override
+  bool get expanded => false;
+
+  @override
+  Widget build(
+    BuildContext context,
+    QuillController controller,
+    Embed node,
+    bool readOnly,
+    bool inline,
+    TextStyle textStyle,
+  ) {
+    final String imageUrl = node.value.data;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Image.file(
+        File(imageUrl),
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const Text(
+            '⚠️ Gagal memuat gambar',
+            style: TextStyle(color: Colors.red)),
+      ),
+    );
+  }
+}
+
+class SizedImageEmbedBuilder extends EmbedBuilder {
+  @override
+  String get key => 'sized_image';
+
+  @override
+  bool get expanded => false;
+
+  @override
+  Widget build(
+    BuildContext context,
+    QuillController controller,
+    Embed node,
+    bool readOnly,
+    bool inline,
+    TextStyle textStyle,
+  ) {
+    final String jsonData = node.value.data.toString();
+    Map<String, dynamic> data;
+    try {
+      data = jsonDecode(jsonData);
+    } catch (e) {
+      return const Text('⚠️ Data gambar rusak');
+    }
+
+    final String imagePath = data['path'];
+    final double height = (data['height'] as num).toDouble();
+    final String id = data['id'];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: GestureDetector(
+        onTap: () {
+          if (!readOnly) {
+            _showResizeDialog(context, controller, imagePath, height, id);
+          }
+        },
+        child: Container(
+          height: height,
+          alignment: Alignment.centerLeft,
+          child: Image.file(
+            File(imagePath),
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) =>
+                const Text('⚠️ Gagal memuat gambar', style: TextStyle(color: Colors.red)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  int _findImageOffset(QuillController controller, String targetId) {
+    int currentOffset = 0;
+    for (var op in controller.document.toDelta().toList()) {
+      if (op.isInsert) {
+        if (op.data is Map && (op.data as Map).containsKey('sized_image')) {
+          final String opData = (op.data as Map)['sized_image'].toString();
+          try {
+            final map = jsonDecode(opData);
+            if (map['id'] == targetId) return currentOffset;
+          } catch (_) {}
+          currentOffset += 1;
+        } else if (op.data is String) {
+          currentOffset += (op.data as String).length;
+        } else {
+          currentOffset += 1;
+        }
+      }
+    }
+    return -1;
+  }
+
+  void _showResizeDialog(BuildContext context, QuillController controller, String imagePath, double currentHeight, String id) {
+    double newHeight = currentHeight;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text("Adjust Image Size", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: newHeight,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
+                        borderRadius: BorderRadius.circular(8)
+                      ),
+                      child: Image.file(File(imagePath), fit: BoxFit.contain),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text("Size:", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Expanded(
+                          child: Slider(
+                            value: newHeight,
+                            min: 80,
+                            max: 400,
+                            activeColor: const Color(0xFF0068C9),
+                            onChanged: (val) {
+                              setModalState(() {
+                                newHeight = val;
+                              });
+                            },
+                          ),
+                        ),
+                        Text("${newHeight.toInt()} px"),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            label: const Text("Delete", style: TextStyle(color: Colors.red)),
+                            onPressed: () {
+                              final int offset = _findImageOffset(controller, id);
+                              if (offset != -1) {
+                                controller.replaceText(offset, 1, '', const TextSelection.collapsed(offset: 0));
+                              }
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0068C9)),
+                            icon: const Icon(Icons.check, color: Colors.white),
+                            label: const Text("Save", style: TextStyle(color: Colors.white)),
+                            onPressed: () {
+                              final int offset = _findImageOffset(controller, id);
+                              if (offset != -1) {
+                                final String newEmbedData = jsonEncode({
+                                  'path': imagePath,
+                                  'height': newHeight,
+                                  'id': id,
+                                });
+                                controller.replaceText(
+                                    offset,
+                                    1,
+                                    BlockEmbed('sized_image', newEmbedData),
+                                    TextSelection.collapsed(offset: offset + 1));
+                              }
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),

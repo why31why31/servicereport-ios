@@ -27,34 +27,59 @@ const SparePartDraftSchema = CollectionSchema(
       name: r'customer',
       type: IsarType.string,
     ),
-    r'date': PropertySchema(
+    r'customerName': PropertySchema(
       id: 2,
+      name: r'customerName',
+      type: IsarType.string,
+    ),
+    r'date': PropertySchema(
+      id: 3,
       name: r'date',
       type: IsarType.string,
     ),
     r'items': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'items',
       type: IsarType.objectList,
       target: r'SparePartDraftItem',
     ),
     r'machine': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'machine',
       type: IsarType.string,
     ),
+    r'machineType': PropertySchema(
+      id: 6,
+      name: r'machineType',
+      type: IsarType.string,
+    ),
+    r'meetWith': PropertySchema(
+      id: 7,
+      name: r'meetWith',
+      type: IsarType.string,
+    ),
     r'notes': PropertySchema(
-      id: 5,
+      id: 8,
       name: r'notes',
       type: IsarType.string,
     ),
+    r'partNames': PropertySchema(
+      id: 9,
+      name: r'partNames',
+      type: IsarType.stringList,
+    ),
+    r'serialNo': PropertySchema(
+      id: 10,
+      name: r'serialNo',
+      type: IsarType.string,
+    ),
     r'technician': PropertySchema(
-      id: 6,
+      id: 11,
       name: r'technician',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 7,
+      id: 12,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -86,6 +111,12 @@ int _sparePartDraftEstimateSize(
     }
   }
   {
+    final value = object.customerName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.date;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -112,7 +143,37 @@ int _sparePartDraftEstimateSize(
     }
   }
   {
+    final value = object.machineType;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.meetWith;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.notes;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final list = object.partNames;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final value = object.serialNo;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -134,17 +195,22 @@ void _sparePartDraftSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeString(offsets[1], object.customer);
-  writer.writeString(offsets[2], object.date);
+  writer.writeString(offsets[2], object.customerName);
+  writer.writeString(offsets[3], object.date);
   writer.writeObjectList<SparePartDraftItem>(
-    offsets[3],
+    offsets[4],
     allOffsets,
     SparePartDraftItemSchema.serialize,
     object.items,
   );
-  writer.writeString(offsets[4], object.machine);
-  writer.writeString(offsets[5], object.notes);
-  writer.writeString(offsets[6], object.technician);
-  writer.writeDateTime(offsets[7], object.updatedAt);
+  writer.writeString(offsets[5], object.machine);
+  writer.writeString(offsets[6], object.machineType);
+  writer.writeString(offsets[7], object.meetWith);
+  writer.writeString(offsets[8], object.notes);
+  writer.writeStringList(offsets[9], object.partNames);
+  writer.writeString(offsets[10], object.serialNo);
+  writer.writeString(offsets[11], object.technician);
+  writer.writeDateTime(offsets[12], object.updatedAt);
 }
 
 SparePartDraft _sparePartDraftDeserialize(
@@ -156,18 +222,21 @@ SparePartDraft _sparePartDraftDeserialize(
   final object = SparePartDraft();
   object.createdAt = reader.readDateTime(offsets[0]);
   object.customer = reader.readStringOrNull(offsets[1]);
-  object.date = reader.readStringOrNull(offsets[2]);
+  object.date = reader.readStringOrNull(offsets[3]);
   object.id = id;
   object.items = reader.readObjectList<SparePartDraftItem>(
-    offsets[3],
+    offsets[4],
     SparePartDraftItemSchema.deserialize,
     allOffsets,
     SparePartDraftItem(),
   );
-  object.machine = reader.readStringOrNull(offsets[4]);
-  object.notes = reader.readStringOrNull(offsets[5]);
-  object.technician = reader.readStringOrNull(offsets[6]);
-  object.updatedAt = reader.readDateTime(offsets[7]);
+  object.machine = reader.readStringOrNull(offsets[5]);
+  object.machineType = reader.readStringOrNull(offsets[6]);
+  object.meetWith = reader.readStringOrNull(offsets[7]);
+  object.notes = reader.readStringOrNull(offsets[8]);
+  object.serialNo = reader.readStringOrNull(offsets[10]);
+  object.technician = reader.readStringOrNull(offsets[11]);
+  object.updatedAt = reader.readDateTime(offsets[12]);
   return object;
 }
 
@@ -185,19 +254,29 @@ P _sparePartDraftDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    case 4:
       return (reader.readObjectList<SparePartDraftItem>(
         offset,
         SparePartDraftItemSchema.deserialize,
         allOffsets,
         SparePartDraftItem(),
       )) as P;
-    case 4:
-      return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readStringOrNull(offset)) as P;
+    case 9:
+      return (reader.readStringList(offset)) as P;
+    case 10:
+      return (reader.readStringOrNull(offset)) as P;
+    case 11:
+      return (reader.readStringOrNull(offset)) as P;
+    case 12:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -505,6 +584,160 @@ extension SparePartDraftQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'customer',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'customerName',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'customerName',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'customerName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'customerName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'customerName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'customerName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'customerName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'customerName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'customerName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'customerName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'customerName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      customerNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'customerName',
         value: '',
       ));
     });
@@ -981,6 +1214,314 @@ extension SparePartDraftQueryFilter
   }
 
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'machineType',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'machineType',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'machineType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'machineType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'machineType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'machineType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'machineType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'machineType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'machineType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'machineType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'machineType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      machineTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'machineType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'meetWith',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'meetWith',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'meetWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'meetWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'meetWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'meetWith',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'meetWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'meetWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'meetWith',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'meetWith',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'meetWith',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      meetWithIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'meetWith',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
       notesIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1129,6 +1670,403 @@ extension SparePartDraftQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'notes',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'partNames',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'partNames',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'partNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'partNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'partNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'partNames',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'partNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'partNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'partNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'partNames',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'partNames',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'partNames',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'partNames',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'partNames',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'partNames',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'partNames',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'partNames',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      partNamesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'partNames',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'serialNo',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'serialNo',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serialNo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serialNo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serialNo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serialNo',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'serialNo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'serialNo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'serialNo',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'serialNo',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serialNo',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterFilterCondition>
+      serialNoIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'serialNo',
         value: '',
       ));
     });
@@ -1386,6 +2324,20 @@ extension SparePartDraftQuerySortBy
     });
   }
 
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      sortByCustomerName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'customerName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      sortByCustomerNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'customerName', Sort.desc);
+    });
+  }
+
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> sortByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.asc);
@@ -1411,6 +2363,33 @@ extension SparePartDraftQuerySortBy
     });
   }
 
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      sortByMachineType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'machineType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      sortByMachineTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'machineType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> sortByMeetWith() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'meetWith', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      sortByMeetWithDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'meetWith', Sort.desc);
+    });
+  }
+
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> sortByNotes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.asc);
@@ -1420,6 +2399,19 @@ extension SparePartDraftQuerySortBy
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> sortByNotesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> sortBySerialNo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serialNo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      sortBySerialNoDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serialNo', Sort.desc);
     });
   }
 
@@ -1479,6 +2471,20 @@ extension SparePartDraftQuerySortThenBy
     });
   }
 
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      thenByCustomerName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'customerName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      thenByCustomerNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'customerName', Sort.desc);
+    });
+  }
+
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> thenByDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.asc);
@@ -1516,6 +2522,33 @@ extension SparePartDraftQuerySortThenBy
     });
   }
 
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      thenByMachineType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'machineType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      thenByMachineTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'machineType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> thenByMeetWith() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'meetWith', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      thenByMeetWithDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'meetWith', Sort.desc);
+    });
+  }
+
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> thenByNotes() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.asc);
@@ -1525,6 +2558,19 @@ extension SparePartDraftQuerySortThenBy
   QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> thenByNotesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy> thenBySerialNo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serialNo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QAfterSortBy>
+      thenBySerialNoDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'serialNo', Sort.desc);
     });
   }
 
@@ -1572,6 +2618,13 @@ extension SparePartDraftQueryWhereDistinct
     });
   }
 
+  QueryBuilder<SparePartDraft, SparePartDraft, QDistinct>
+      distinctByCustomerName({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'customerName', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<SparePartDraft, SparePartDraft, QDistinct> distinctByDate(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1586,10 +2639,38 @@ extension SparePartDraftQueryWhereDistinct
     });
   }
 
+  QueryBuilder<SparePartDraft, SparePartDraft, QDistinct> distinctByMachineType(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'machineType', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QDistinct> distinctByMeetWith(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'meetWith', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<SparePartDraft, SparePartDraft, QDistinct> distinctByNotes(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'notes', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QDistinct>
+      distinctByPartNames() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'partNames');
+    });
+  }
+
+  QueryBuilder<SparePartDraft, SparePartDraft, QDistinct> distinctBySerialNo(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'serialNo', caseSensitive: caseSensitive);
     });
   }
 
@@ -1628,6 +2709,13 @@ extension SparePartDraftQueryProperty
     });
   }
 
+  QueryBuilder<SparePartDraft, String?, QQueryOperations>
+      customerNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'customerName');
+    });
+  }
+
   QueryBuilder<SparePartDraft, String?, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
@@ -1647,9 +2735,35 @@ extension SparePartDraftQueryProperty
     });
   }
 
+  QueryBuilder<SparePartDraft, String?, QQueryOperations>
+      machineTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'machineType');
+    });
+  }
+
+  QueryBuilder<SparePartDraft, String?, QQueryOperations> meetWithProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'meetWith');
+    });
+  }
+
   QueryBuilder<SparePartDraft, String?, QQueryOperations> notesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'notes');
+    });
+  }
+
+  QueryBuilder<SparePartDraft, List<String>?, QQueryOperations>
+      partNamesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'partNames');
+    });
+  }
+
+  QueryBuilder<SparePartDraft, String?, QQueryOperations> serialNoProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'serialNo');
     });
   }
 

@@ -9,15 +9,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   isar: ^3.1.0
   isar_flutter_libs: ^3.1.0
   path_provider: ^2.1.2
-  signature: ^6.3.0         # <--- Diupdate
-  share_plus: ^13.1.0       # <--- Diupdate ke versi terbaru
-  image_picker: ^1.1.2      # <--- Diupdate ke versi terbaru
+  signature: ^5.5.0
+  share_plus: ^10.1.0
+  image_picker: ^1.1.2
   pdf: ^3.10.7
   printing: ^5.13.0
   http: ^1.2.1
+  flutter_quill: ^9.3.0
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +29,10 @@ dev_dependencies:
   flutter_launcher_icons: "^0.13.1"
   build_runner: ^2.4.8
   isar_generator: ^3.1.0
+
+dependency_overrides:
+  intl: 0.20.2
+  win32: ^5.5.0
 
 flutter:
   uses-material-design: true
@@ -36,6 +43,6 @@ flutter:
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: true                   # <--- TAMBAHKAN BARIS INI UNTUK IPHONE
+  ios: true
   image_path: "assets/icon.png"
   min_sdk_android: 21
