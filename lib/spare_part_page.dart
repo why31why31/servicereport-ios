@@ -920,7 +920,7 @@ class _SparePartRecommendationPageState extends State<SparePartRecommendationPag
                     _buildLabel("Machine Type"),
                     TextFormField(
                       controller: _machineTypeController,
-                      decoration: const InputDecoration(hintText: "e.g., S 250 S / Perfecta"),
+                      decoration: const InputDecoration(hintText: "e.g., S 250 / HM1-230"),
                     ),
 
                     _buildLabel("Serial No"),

@@ -370,11 +370,9 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     _dateController.dispose();
     _gDriveController.dispose();
 
-    // FIXED: Mencegah Memory Leak dengan memanggil dispose pada SignatureController
     _technicianSigController.dispose();
     _customerSigController.dispose();
 
-    // FIXED: Mencegah Memory Leak untuk semua text controller dinamis
     for (var block in _actionBlocks) {
       block.textController.dispose();
     }
@@ -384,7 +382,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
 
   String get _fuPlainText => _quillController.document.toPlainText().trim();
 
-  // ====== FUNGSI UNTUK INSERT GAMBAR / DRAWING ======
   void _insertImageToQuill(String imagePath) {
     int index = _quillController.selection.baseOffset;
     if (index < 0) {
@@ -451,10 +448,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       ),
     );
   }
-  // ========================================================
 
-  // ====== FUNGSI UNTUK PARSING GAMBAR QUILL KE PDF ======
-  // ====== FUNGSI UNTUK PARSING GAMBAR QUILL & FORMAT TEKS KE PDF ======
   List<pw.Widget> _buildFollowUpPdfWidgets() {
     List<pw.Widget> widgets = [];
     final delta = _quillController.document.toDelta();
@@ -462,7 +456,26 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     List<pw.TextSpan> currentTextSpans = [];
     int orderedListCounter = 1;
 
-    // Fungsi helper untuk menerjemahkan format teks Quill ke PDF
+    List<pw.Widget> imageBuffer = [];
+    int emptyLineCountAfterImage = 0;
+
+    void flushImageBuffer() {
+      if (imageBuffer.isNotEmpty) {
+        widgets.add(
+          pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(vertical: 6),
+            child: pw.Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              crossAxisAlignment: pw.WrapCrossAlignment.start,
+              children: List.from(imageBuffer),
+            ),
+          ),
+        );
+        imageBuffer.clear();
+      }
+    }
+
     pw.TextStyle getStyle(Map<String, dynamic>? attrs) {
       return pw.TextStyle(
         fontSize: 9.5,
@@ -486,7 +499,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         String text = op.data as String;
         Map<String, dynamic>? attrs = op.attributes;
 
-        // Quill menyimpan format block (seperti list/bullet) berbarengan pada karakter newline '\n'
         List<String> lines = text.split('\n');
 
         for (int i = 0; i < lines.length; i++) {
@@ -495,55 +507,53 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                 pw.TextSpan(text: lines[i], style: getStyle(attrs)));
           }
 
-          // Jika bukan elemen terakhir, berarti ada karakter '\n' di sini (tanda berakhirnya satu baris/blok)
           if (i < lines.length - 1) {
-            if (attrs != null && attrs['list'] == 'bullet') {
-              // Eksekusi jika baris ini adalah Bullet List
-              widgets.add(
-                pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 3),
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Container(
-                        width: 12,
-                        child: pw.Text("•", style: pw.TextStyle(fontSize: 9.5)),
-                      ),
-                      pw.Expanded(
-                        child: pw.RichText(
-                            text: pw.TextSpan(
-                                children: List.from(currentTextSpans))),
-                      ),
-                    ],
+            if (currentTextSpans.isNotEmpty) {
+              flushImageBuffer();
+
+              if (attrs != null && attrs['list'] == 'bullet') {
+                widgets.add(
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 3),
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Container(
+                          width: 12,
+                          child: pw.Text("•", style: const pw.TextStyle(fontSize: 9.5)),
+                        ),
+                        pw.Expanded(
+                          child: pw.RichText(
+                              text: pw.TextSpan(
+                                  children: List.from(currentTextSpans))),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            } else if (attrs != null && attrs['list'] == 'ordered') {
-              // Eksekusi jika baris ini adalah Numbering List
-              widgets.add(
-                pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 3),
-                  child: pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Container(
-                        width: 15,
-                        child: pw.Text("$orderedListCounter.",
-                            style: pw.TextStyle(fontSize: 9.5)),
-                      ),
-                      pw.Expanded(
-                        child: pw.RichText(
-                            text: pw.TextSpan(
-                                children: List.from(currentTextSpans))),
-                      ),
-                    ],
+                );
+              } else if (attrs != null && attrs['list'] == 'ordered') {
+                widgets.add(
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 3),
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Container(
+                          width: 15,
+                          child: pw.Text("$orderedListCounter.",
+                              style: const pw.TextStyle(fontSize: 9.5)),
+                        ),
+                        pw.Expanded(
+                          child: pw.RichText(
+                              text: pw.TextSpan(
+                                  children: List.from(currentTextSpans))),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-              orderedListCounter++;
-            } else {
-              // Eksekusi jika baris ini adalah Paragraf Biasa
-              if (currentTextSpans.isNotEmpty) {
+                );
+                orderedListCounter++;
+              } else {
                 widgets.add(
                   pw.Padding(
                     padding: const pw.EdgeInsets.only(bottom: 3),
@@ -552,20 +562,26 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                             children: List.from(currentTextSpans))),
                   ),
                 );
+                orderedListCounter = 1;
+              }
+              currentTextSpans.clear();
+            } else {
+              if (imageBuffer.isNotEmpty) {
+                if (emptyLineCountAfterImage == 0) {
+                  emptyLineCountAfterImage++;
+                } else {
+                  flushImageBuffer();
+                  widgets.add(pw.SizedBox(height: 8));
+                }
               } else {
-                // Jarak kosong antar baris (Enter)
                 widgets.add(pw.SizedBox(height: 8));
               }
-              // Reset counter numbering jika list angka terputus
-              orderedListCounter = 1;
             }
-            currentTextSpans.clear(); // Bersihkan tampungan teks untuk baris berikutnya
           }
         }
       } else if (op.data is Map<String, dynamic>) {
-        // --- Eksekusi Gambar yang Disisipkan ke Editor ---
-        // Jika masih ada teks yang menggantung sebelum gambar, print teksnya terlebih dahulu
         if (currentTextSpans.isNotEmpty) {
+          flushImageBuffer(); 
           widgets.add(
             pw.Padding(
               padding: const pw.EdgeInsets.only(bottom: 3),
@@ -596,31 +612,32 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
         if (isImage && imagePath != null) {
           if (File(imagePath).existsSync()) {
             final imageBytes = File(imagePath).readAsBytesSync();
-            widgets.add(
+            
+            imageBuffer.add(
               pw.Container(
-                margin: const pw.EdgeInsets.symmetric(vertical: 6),
                 height: imageHeight,
-                alignment: pw.Alignment.centerLeft,
                 child: pw.Image(pw.MemoryImage(imageBytes),
                     fit: pw.BoxFit.contain),
               ),
             );
+            emptyLineCountAfterImage = 0; 
           }
         }
       }
     }
 
-    // Print sisa teks di paling akhir dokumen jika ada
     if (currentTextSpans.isNotEmpty) {
+      flushImageBuffer();
       widgets.add(
         pw.RichText(
             text: pw.TextSpan(children: List.from(currentTextSpans))),
       );
+    } else {
+      flushImageBuffer();
     }
 
     return widgets;
-  }   
-  // ========================================================
+  }
 
   Future<void> _checkAndLoadIncomingDraft() async {
     if (widget.loadReportData != null) {
@@ -682,7 +699,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
       if (data.savedActionBlocks != null &&
           data.savedActionBlocks!.isNotEmpty) {
         
-        // FIXED: Hapus instance lama secara aman sebelum membuat data draft yang baru
         for (var block in _actionBlocks) {
           block.textController.dispose();
         }
@@ -693,13 +709,11 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
           _actionBlocks.add(block);
         }
         
-        // Cek context mounted karena loop await bisa memakan waktu
         if (mounted) {
           setState(() {});
         }
       }
     } else {
-      // Hapus data secara dinamis apabila widget diperbarui dengan nilai null (reset form)
       for (var block in _actionBlocks) {
         block.textController.dispose();
       }
@@ -841,7 +855,6 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     _technicianSigController.clear();
     _customerSigController.clear();
 
-    // FIXED: Membersihkan sisa resources untuk menghindari kebocoran memori
     for (var block in _actionBlocks) {
       block.textController.dispose();
     }
@@ -908,7 +921,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
             alignment: pw.Alignment.centerRight,
             padding: const pw.EdgeInsets.only(top: 10),
             child: pw.Text("Page ${context.pageNumber}",
-                style: pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+                style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
           );
         },
         build: (pw.Context context) => [
@@ -954,7 +967,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_cbController.text,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
                 pw.SizedBox(width: 10),
                 pw.Container(
                     color: const PdfColor.fromInt(0xFFF0F4F8),
@@ -972,7 +985,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_dateController.text,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
               ]),
               pw.TableRow(children: [
                 pw.SizedBox(height: 8),
@@ -998,7 +1011,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_cuController.text,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
                 pw.SizedBox(width: 10),
                 pw.Container(
                     color: const PdfColor.fromInt(0xFFF0F4F8),
@@ -1016,7 +1029,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_mwController.text,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
               ]),
             ],
           ),
@@ -1052,7 +1065,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_selectedMachine,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
                 pw.SizedBox(width: 10),
                 pw.Container(
                     color: const PdfColor.fromInt(0xFFF0F4F8),
@@ -1070,7 +1083,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_tyController.text,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
                 pw.SizedBox(width: 10),
                 pw.Container(
                     color: const PdfColor.fromInt(0xFFF0F4F8),
@@ -1088,7 +1101,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     padding: const pw.EdgeInsets.only(
                         top: 3, bottom: 3, left: 4, right: 4),
                     child: pw.Text(_snController.text,
-                        style: pw.TextStyle(fontSize: 9.5))),
+                        style: const pw.TextStyle(fontSize: 9.5))),
               ]),
             ],
           ),
@@ -1103,7 +1116,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
               height: 0.8,
               color: PdfColors.black),
           pw.Text(_prController.text,
-              style: pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3)),
+              style: const pw.TextStyle(fontSize: 9.5, lineSpacing: 1.3)),
           pw.SizedBox(height: 18),
           pw.Text("FOLLOW UP ACTION",
               style: pw.TextStyle(
@@ -1145,7 +1158,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                     if (block.textController.text.isNotEmpty)
                       pw.Text(
                         block.textController.text,
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                             fontSize: 9.5,
                             lineSpacing: 1.3,
                             fontStyle: pw.FontStyle.italic),
@@ -1168,7 +1181,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.Text("Service Technician,",
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                             fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
                     pw.SizedBox(height: 15),
                     if (techSigBytes != null)
@@ -1191,7 +1204,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.Text("Customer,",
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                             fontSize: 9.5, fontStyle: pw.FontStyle.italic)),
                     pw.SizedBox(height: 15),
                     if (custSigBytes != null)
@@ -1665,53 +1678,63 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
                           children: [
                             if (_showToolbar) ...[
                               QuillSimpleToolbar(
-  configurations: QuillSimpleToolbarConfigurations(
-    controller: _quillController,
-    
-    // 1. Matikan mode multi-baris agar toolbar hanya 1 baris (bisa digeser horizontal)
-    multiRowsDisplay: false, 
-    
-    // 2. Tampilkan fitur yang esensial saja
-    showUndo: true,
-    showRedo: true,
-    showBoldButton: true,
-    showItalicButton: true,
-    showUnderLineButton: true,
-    showListBullets: true,
-    showListNumbers: true,
-    
-    // 3. Sembunyikan semua fitur yang memakan space & tidak relevan untuk PDF
-    showColorButton: false,
-    showBackgroundColorButton: false,
-    showClearFormat: false,
-    showHeaderStyle: false,
-    showStrikeThrough: false,
-    showQuote: false,
-    showIndent: false,
-    showAlignmentButtons: false,
-    showLeftAlignment: false,
-    showCenterAlignment: false,
-    showRightAlignment: false,
-    showJustifyAlignment: false,
-    showListCheck: false,
-    showClipboardCut: false,
-    showClipboardCopy: false,
-    showClipboardPaste: false,
-    showFontFamily: false,
-    showFontSize: false,
-    showSearchButton: false,
-    showSubscript: false,
-    showSuperscript: false,
-    showInlineCode: false,
-    showCodeBlock: false,
-    showLink: false,
+                                configurations: QuillSimpleToolbarConfigurations(
+                                  controller: _quillController,
+                                  multiRowsDisplay: false, 
+                                  showUndo: false,
+                                  showRedo: false,
+                                  showBoldButton: true,
+                                  showItalicButton: true,
+                                  showUnderLineButton: true,
+                                  showListBullets: true,
+                                  showListNumbers: true,
+                                  showColorButton: false,
+                                  showBackgroundColorButton: false,
+                                  showClearFormat: false,
+                                  showHeaderStyle: false,
+                                  showStrikeThrough: false,
+                                  showQuote: false,
+                                  showIndent: false,
+                                  showAlignmentButtons: false,
+                                  showLeftAlignment: false,
+                                  showCenterAlignment: false,
+                                  showRightAlignment: false,
+                                  showJustifyAlignment: false,
+                                  showListCheck: false,
+                                  showClipboardCut: false,
+                                  showClipboardCopy: false,
+                                  showClipboardPaste: false,
+                                  showFontFamily: false,
+                                  showFontSize: false,
+                                  showSearchButton: false,
+                                  showSubscript: false,
+                                  showSuperscript: false,
+                                  showInlineCode: false,
+                                  showCodeBlock: false,
+                                  showLink: false,
                                   customButtons: [
                                     QuillToolbarCustomButtonOptions(
-                                      icon: const Icon(
-                                          Icons.add_photo_alternate),
+                                      icon: const Icon(Icons.undo),
+                                      tooltip: 'Undo',
+                                      onPressed: () {
+                                        if (_quillController.hasUndo) {
+                                          _quillController.undo();
+                                        }
+                                      },
+                                    ),
+                                    QuillToolbarCustomButtonOptions(
+                                      icon: const Icon(Icons.redo),
+                                      tooltip: 'Redo',
+                                      onPressed: () {
+                                        if (_quillController.hasRedo) {
+                                          _quillController.redo();
+                                        }
+                                      },
+                                    ),
+                                    QuillToolbarCustomButtonOptions(
+                                      icon: const Icon(Icons.add_photo_alternate),
                                       tooltip: 'Insert Foto/Drawing',
-                                      onPressed: () =>
-                                          _showInsertMediaMenu(context),
+                                      onPressed: () => _showInsertMediaMenu(context),
                                     ),
                                   ],
                                 ),
