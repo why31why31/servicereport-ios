@@ -287,6 +287,7 @@ class _FormReportOfflinePageState extends State<FormReportOfflinePage> {
     "PT Medifarma Laboratories",
     "PT Dexa Medica",
     "PT Ferron",
+    "PT Beta Pharmacon",
     "PT Mahakam Beta Farma",
     "PT Supra Ferbindo Farma",
     "PT Tempo Scan Pacific",
